@@ -3,7 +3,7 @@
 import { useState } from "react";
 import * as api from "@/lib/api";
 import { isPending, type DateKind, type TimelineEntry } from "@/lib/review";
-import { Button, Callout, EmptyState, Field, Panel, Pill, inputClass } from "../ui";
+import { Button, Callout, CheckIcon, CrossIcon, EmptyState, Field, Panel, PencilIcon, Pill, inputClass } from "../ui";
 import { SourceQuote, StatusChip } from "../review";
 import type { StepProps } from "./types";
 
@@ -180,10 +180,12 @@ function EventRow({
                 busy={busy}
                 onClick={() => patch({ status: "REVIEWER_ACCEPTED" })}
               >
-                ✓ Accept
+                <CheckIcon className="h-3 w-3" />
+                Accept
               </Button>
               <Button size="sm" onClick={() => setEditing(true)} busy={busy}>
-                ✎ Edit
+                <PencilIcon className="h-3 w-3" />
+                Edit
               </Button>
               <Button
                 size="sm"
@@ -192,7 +194,8 @@ function EventRow({
                 onClick={() => run(key, () => api.deleteEvent(caseId, event.id))}
                 title="Remove this event from the timeline"
               >
-                ✕ Remove
+                <CrossIcon className="h-3 w-3" />
+                Remove
               </Button>
             </div>
           </>
@@ -232,7 +235,7 @@ export default function TimelineEditor({
               busy={busyKey === "suggest-timeline"}
               onClick={() => suggest("timeline")}
             >
-              {events.length ? "Re-run timeline" : "✨ Build timeline"}
+              {events.length ? "Re-run timeline" : "Build timeline"}
             </Button>
             {stats.timeline_pending > 0 && (
               <Button

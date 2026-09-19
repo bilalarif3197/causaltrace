@@ -148,9 +148,9 @@ export default function CaseWorkspace({ params }: { params: Promise<{ id: string
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-[1700px] flex-1 gap-5 px-5 py-5 xl:grid-cols-[13rem_minmax(0,1.15fr)_minmax(0,1.5fr)]">
+      <div className="mx-auto grid w-full max-w-[1700px] flex-1 gap-5 px-5 py-5 print:block print:max-w-none print:p-0 xl:grid-cols-[13rem_minmax(0,1.15fr)_minmax(0,1.5fr)]">
         {/* Step rail */}
-        <aside className="xl:sticky xl:top-[3.75rem] xl:self-start">
+        <aside className="print:hidden xl:sticky xl:top-[3.75rem] xl:self-start">
           <StepRail envelope={envelope} current={step} onSelect={setStep} />
           <div className="mt-4 rounded-lg border border-ink-700/60 bg-ink-900/50 px-3 py-2.5">
             <p className="text-[10px] uppercase tracking-wider text-slate-muted">Review progress</p>
@@ -165,7 +165,7 @@ export default function CaseWorkspace({ params }: { params: Promise<{ id: string
         </aside>
 
         {/* Source narrative stays visible: it is what makes every pane auditable. */}
-        <div className="xl:sticky xl:top-[3.75rem] xl:self-start">
+        <div className="print:hidden xl:sticky xl:top-[3.75rem] xl:self-start">
           <SourcePanel narrative={doc.narrative} active={active} onClear={() => setActive(null)} />
         </div>
 

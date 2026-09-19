@@ -101,3 +101,24 @@ Three rules that must not be relaxed:
 
 `truststore` is required: NCBI's cross-signed chain fails certifi validation but passes
 against the OS trust store.
+
+## Seeing the UI (tools/shoot.py)
+
+The frontend can only be verified visually, so drive headless Chromium rather than guessing:
+
+```bash
+backend/.venv/bin/python tools/shoot.py            # every step -> tools/shots/*.png
+backend/.venv/bin/python tools/shoot.py --fresh    # rebuild the seed case (spends tokens)
+```
+
+It reports console errors, page errors, failed requests and horizontal overflow, and seeds a
+case left in a MIXED review state on purpose — an all-pending or all-accepted case hides most
+of the states the UI has to render. Read the PNGs directly; that is the feedback loop.
+
+Leaves a case titled `[screenshot seed] ...` in the database; safe to delete.
+
+## No emojis
+
+Use the SVG icons in `components/ui.tsx` (CheckIcon, PencilIcon, CrossIcon, WarnIcon,
+QuestionIcon, AiIcon). Dingbat characters render inconsistently and some fonts substitute
+colour emoji for them, which is wrong for a clinical tool.

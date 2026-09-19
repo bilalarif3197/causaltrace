@@ -8,7 +8,7 @@ import {
   type Fact,
   type FactSection,
 } from "@/lib/review";
-import { Button, Callout, EmptyState, Field, Panel, Pill, inputClass } from "../ui";
+import { Button, Callout, EmptyState, Field, Panel, Pill, WarnIcon, inputClass } from "../ui";
 import { ReviewableCard } from "../review";
 import type { StepProps } from "./types";
 
@@ -135,7 +135,7 @@ export default function EvidenceReview({
               busy={busyKey === "suggest-facts"}
               onClick={() => suggest("facts")}
             >
-              {doc.facts.length ? "Re-run extraction" : "✨ Extract evidence"}
+              {doc.facts.length ? "Re-run extraction" : "Extract evidence"}
             </Button>
             {stats.facts_pending > 0 && (
               <Button
@@ -169,7 +169,8 @@ export default function EvidenceReview({
             </Pill>
             {stats.facts_unsupported > 0 && (
               <Pill tone="against" title="Verification could not confirm the cited evidence">
-                ⚠ {stats.facts_unsupported} failed verification
+                <WarnIcon className="h-3 w-3" />
+                {stats.facts_unsupported} failed verification
               </Pill>
             )}
           </div>

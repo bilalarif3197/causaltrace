@@ -97,3 +97,64 @@ mark.evidence-dim {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Print.
+
+   The report screen offers Print / PDF, and printing a dark UI produces a
+   near-black page. Invert to paper, drop the chrome a reader cannot click,
+   and keep the semantic colours legible on white.
+   --------------------------------------------------------------------------- */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  /* Navigation, rails and controls are meaningless on paper. */
+  header,
+  nav,
+  aside,
+  button,
+  select,
+  textarea,
+  .no-print {
+    display: none !important;
+  }
+
+  section {
+    border-color: #ccc !important;
+    break-inside: avoid;
+  }
+
+  /* Every tinted surface in this UI is a dark translucent fill, which prints
+     as an unreadable grey blob. Strip fills, keep borders, and let the text
+     carry the meaning. */
+  *,
+  *::before,
+  *::after {
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    color: #111 !important;
+  }
+
+  [class*="rounded-full"],
+  [class*="rounded-lg"],
+  [class*="rounded-xl"] {
+    border-color: #bbb !important;
+  }
+
+  /* Keep the evidence highlight visible without a colour cartridge. */
+  mark.evidence-active {
+    background: #f3f3f3 !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    border-bottom: 2px solid #555;
+  }
+}

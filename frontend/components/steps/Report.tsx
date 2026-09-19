@@ -10,7 +10,7 @@ import {
   type DimensionName,
   type FactSection,
 } from "@/lib/review";
-import { Button, Callout, Panel, Pill } from "../ui";
+import { Button, Callout, CheckIcon, Panel, Pill } from "../ui";
 import type { StepProps } from "./types";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -52,7 +52,10 @@ export default function Report({ envelope }: StepProps) {
         aside={
           <div className="flex gap-2">
             {doc.conclusion.signed_off ? (
-              <Pill tone="support">✓ signed off</Pill>
+              <Pill tone="support">
+            <CheckIcon className="h-3 w-3" />
+            signed off
+          </Pill>
             ) : (
               <Pill tone="unknown">draft — not signed off</Pill>
             )}

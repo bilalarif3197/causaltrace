@@ -13,6 +13,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { AssessmentLevel, Hypothesis } from "@/lib/review";
+import { AiIcon, CheckIcon } from "./ui";
 
 /** Edge weight and label both encode strength, so it is never colour-only. */
 const EDGE_STYLE: Record<AssessmentLevel, { stroke: string; width: number; dash?: string }> = {
@@ -56,12 +57,18 @@ function CauseNode({ data }: NodeProps<Node<CauseData>>) {
 
       <div className="mt-1.5 border-t border-ink-700 pt-1.5">
         {data.reviewerAssessment ? (
-          <p className="text-[10px] text-accent-400">✓ {data.reviewerAssessment}</p>
+          <p className="flex items-center gap-1 text-[10px] text-accent-400">
+            <CheckIcon className="h-2.5 w-2.5" />
+            {data.reviewerAssessment}
+          </p>
         ) : (
           <p className="text-[10px] text-slate-muted">awaiting your assessment</p>
         )}
         {data.aiAssessment && data.aiAssessment !== data.reviewerAssessment && (
-          <p className="text-[9.5px] text-violet-300">✨ AI: {data.aiAssessment}</p>
+          <p className="flex items-center gap-1 text-[9.5px] text-violet-300">
+            <AiIcon className="h-2.5 w-2.5" />
+            AI: {data.aiAssessment}
+          </p>
         )}
       </div>
 
@@ -97,7 +104,7 @@ export default function CausalGraph({
   onSelect: (id: string) => void;
 }) {
   const { nodes, edges } = useMemo(() => {
-    const gapY = 132;
+    const gapY = 138;
     const height = Math.max(1, hypotheses.length) * gapY;
 
     const causeNodes: Node[] = hypotheses.map((h, i) => ({
@@ -156,9 +163,14 @@ export default function CausalGraph({
     return { nodes: [...causeNodes, eventNode], edges: causeEdges };
   }, [hypotheses, adverseEvent, selectedId]);
 
+  // A fixed height made fitView shrink a long list to illegibility and still
+  // clip it. Grow with the node count instead, within sane bounds.
+  const height = Math.min(880, Math.max(360, hypotheses.length * 122 + 90));
+
   return (
-    <div className="h-[440px] w-full">
+    <div className="w-full" style={{ height }}>
       <ReactFlow
+        key={hypotheses.length}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
@@ -167,7 +179,8 @@ export default function CausalGraph({
         }}
         fitView
         fitViewOptions={{ padding: 0.18 }}
-        proOptions={{ hideAttribution: true }}
+        // Attribution left in place: hiding it requires a React Flow Pro
+        // subscription, which this project does not have.
         nodesDraggable={false}
         nodesConnectable={false}
         edgesFocusable={false}

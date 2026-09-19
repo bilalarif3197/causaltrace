@@ -1,7 +1,7 @@
 "use client";
 
 import * as api from "@/lib/api";
-import { Button, Callout, EmptyState, Field, Panel, Pill, inputClass } from "../ui";
+import { AiIcon, Button, Callout, EmptyState, Field, Panel, Pill, inputClass } from "../ui";
 import { SourceQuote, StatusChip } from "../review";
 import type { StepProps } from "./types";
 
@@ -37,7 +37,7 @@ export default function WhoUmc({
             busy={busyKey === "suggest-who_umc"}
             onClick={() => suggest("who_umc")}
           >
-            {umc ? "Re-run" : "✨ Suggest category"}
+            {umc ? "Re-run" : "Suggest category"}
           </Button>
         }
         className="border-indigo-400/25"
@@ -52,7 +52,10 @@ export default function WhoUmc({
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <StatusChip status={umc.reviewer_status} />
               {umc.ai_classification && (
-                <Pill tone="ai">✨ AI suggests: {umc.ai_classification}</Pill>
+                <Pill tone="ai">
+                  <AiIcon className="h-3 w-3" />
+                  AI suggests: {umc.ai_classification}
+                </Pill>
               )}
               {umc.reviewer_classification && (
                 <Pill

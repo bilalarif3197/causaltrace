@@ -33,7 +33,7 @@ export default function MissingEvidence({ envelope, run, suggest, busyKey }: Ste
               busy={busyKey === "suggest-missing"}
               onClick={() => suggest("missing")}
             >
-              {doc.missing_evidence.length ? "Re-run" : "✨ Find gaps"}
+              {doc.missing_evidence.length ? "Re-run" : "Find gaps"}
             </Button>
             <Button size="sm" onClick={() => setAdding((v) => !v)}>
               + Add gap

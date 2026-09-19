@@ -308,42 +308,44 @@ export interface ActiveSpan {
    Display helpers
    -------------------------------------------------------------------------- */
 
+export type IconName = "ai" | "check" | "pencil" | "cross" | "question" | "warn" | "dot";
+
 export const STATUS_META: Record<
   ReviewerStatus,
-  { glyph: string; label: string; tone: string; ring: string }
+  { icon: IconName; label: string; tone: string; ring: string }
 > = {
   AI_SUGGESTED: {
-    glyph: "✨",
+    icon: "ai",
     label: "AI suggested",
     tone: "text-violet-300",
     ring: "border-violet-400/40 bg-violet-400/10",
   },
   REVIEWER_ACCEPTED: {
-    glyph: "✓",
+    icon: "check",
     label: "Reviewer confirmed",
     tone: "text-support-400",
     ring: "border-support-400/40 bg-support-bg",
   },
   REVIEWER_MODIFIED: {
-    glyph: "✎",
+    icon: "pencil",
     label: "Reviewer modified",
     tone: "text-accent-400",
     ring: "border-accent-500/40 bg-accent-500/10",
   },
   REVIEWER_REJECTED: {
-    glyph: "✕",
+    icon: "cross",
     label: "Reviewer rejected",
     tone: "text-against-400",
     ring: "border-against-400/40 bg-against-bg",
   },
   UNKNOWN: {
-    glyph: "?",
+    icon: "question",
     label: "Unknown",
     tone: "text-slate-muted",
     ring: "border-ink-600 bg-ink-800/70",
   },
   NEEDS_REVIEW: {
-    glyph: "⚠",
+    icon: "warn",
     label: "Needs review",
     tone: "text-unknown-400",
     ring: "border-unknown-400/50 bg-unknown-bg",

@@ -1,6 +1,7 @@
 "use client";
 
 import type { CaseEnvelope } from "@/lib/review";
+import { CheckIcon } from "./ui";
 
 export const STEPS = [
   { id: "evidence", label: "Evidence review", short: "Evidence" },
@@ -102,7 +103,7 @@ export default function StepRail({
               }`}
               aria-hidden
             >
-              {done ? "✓" : i + 1}
+              {done ? <CheckIcon className="h-3 w-3" /> : i + 1}
             </span>
             <span className="flex-1 truncate text-[12.5px] font-medium">{step.label}</span>
             {count > 0 && (

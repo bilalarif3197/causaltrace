@@ -2,7 +2,7 @@
 
 import * as api from "@/lib/api";
 import type { Answer, FrameworkResult } from "@/lib/review";
-import { Button, Callout, Panel, Pill } from "../ui";
+import { AiIcon, Button, Callout, Panel, Pill } from "../ui";
 import { SourceQuote, StatusChip } from "../review";
 import type { StepProps } from "./types";
 
@@ -20,14 +20,19 @@ const BANDS = [
 function ScoreScale({ result }: { result: FrameworkResult }) {
   const left = pct(result.score_floor);
   const width = Math.max(0.8, pct(result.score_ceiling) - left);
+  // Bands are unequal (5/4/4/5 of 18 units), so labels must use the same
+  // proportional widths as the bars. `justify-between` spaced them evenly and
+  // put every label under the wrong band.
+  const bandWidth = (b: (typeof BANDS)[number]) => ((b.to - b.from + 1) / (MAX - MIN + 1)) * 100;
+
   return (
     <div>
-      <div className="relative h-10">
+      <div className="relative h-9">
         <div className="absolute inset-x-0 top-3 flex h-3 overflow-hidden rounded-full border border-ink-700">
           {BANDS.map((b) => (
             <div
               key={b.name}
-              style={{ width: `${((b.to - b.from + 1) / (MAX - MIN + 1)) * 100}%` }}
+              style={{ width: `${bandWidth(b)}%` }}
               className="border-r border-ink-900/80 bg-ink-800 last:border-r-0"
               title={`${b.name} (${b.from} to ${b.to})`}
             />
@@ -38,13 +43,19 @@ function ScoreScale({ result }: { result: FrameworkResult }) {
           style={{ left: `${left}%`, width: `${width}%` }}
           title={`Could fall between ${result.score_floor} and ${result.score_ceiling}`}
         />
-        <div className="absolute top-1.5 -translate-x-1/2" style={{ left: `${pct(result.total_score)}%` }}>
-          <div className="h-6 w-0.5 bg-accent-400" />
+        <div
+          className="absolute top-1 -translate-x-1/2"
+          style={{ left: `${pct(result.total_score)}%` }}
+          title={`Total ${result.total_score}`}
+        >
+          <div className="h-7 w-0.5 bg-accent-400" />
         </div>
       </div>
-      <div className="flex justify-between font-mono text-[10px] text-slate-muted">
+      <div className="flex text-[10px] text-slate-muted">
         {BANDS.map((b) => (
-          <span key={b.name}>{b.name}</span>
+          <span key={b.name} style={{ width: `${bandWidth(b)}%` }} className="text-center">
+            {b.name}
+          </span>
         ))}
       </div>
     </div>
@@ -92,7 +103,8 @@ export default function NaranjoReview({
                 busy={busyKey === "suggest-naranjo"}
                 onClick={() => suggest("naranjo")}
               >
-                ✨ Suggest answers
+                <AiIcon className="h-3 w-3" />
+                Suggest answers
               </Button>
               {stats.naranjo_pending > 0 && (
                 <Button
@@ -166,7 +178,8 @@ export default function NaranjoReview({
                     )}
                     {item.ai && (
                       <p className="mt-1 text-[11px] text-violet-300">
-                        ✨ AI suggests {item.ai_answer}
+                        <AiIcon className="h-2.5 w-2.5" />{" "}
+                        AI suggests {item.ai_answer}
                         {item.ai.rationale ? ` — ${item.ai.rationale}` : ""}
                       </p>
                     )}

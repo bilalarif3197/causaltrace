@@ -30,3 +30,4 @@ evaluation/pmc_candidates.json
 backend/causaltrace.db
 backend/causaltrace.db-wal
 backend/causaltrace.db-shm
+tools/shots/

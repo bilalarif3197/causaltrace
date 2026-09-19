@@ -6,11 +6,38 @@ import {
   isPending,
   STATUS_META,
   type ActiveSpan,
+  type IconName,
   type ReviewableBase,
   type ReviewerStatus,
   type Verdict,
 } from "@/lib/review";
-import { Button, Pill, inputClass } from "./ui";
+import {
+  AiIcon,
+  Button,
+  CheckIcon,
+  CrossIcon,
+  DotIcon,
+  PencilIcon,
+  Pill,
+  QuestionIcon,
+  WarnIcon,
+  inputClass,
+} from "./ui";
+
+const ICONS: Record<IconName, (p: { className?: string }) => React.ReactElement> = {
+  ai: AiIcon,
+  check: CheckIcon,
+  pencil: PencilIcon,
+  cross: CrossIcon,
+  question: QuestionIcon,
+  warn: WarnIcon,
+  dot: DotIcon,
+};
+
+export function StatusIcon({ name, className }: { name: IconName; className?: string }) {
+  const Component = ICONS[name];
+  return <Component className={className} />;
+}
 
 /* --------------------------------------------------------------------------
    Status
@@ -27,7 +54,7 @@ export function StatusChip({ status, className = "" }: { status: ReviewerStatus;
     <span
       className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10.5px] font-medium ${meta.ring} ${meta.tone} ${className}`}
     >
-      <span aria-hidden>{meta.glyph}</span>
+      <StatusIcon name={meta.icon} className="h-3 w-3" />
       {meta.label}
     </span>
   );
@@ -37,15 +64,23 @@ export function VerificationBadge({ verdict, reason }: { verdict: Verdict; reaso
   if (verdict === "SUPPORTED") {
     return (
       <Pill tone="support" title={reason ?? undefined}>
-        ✓ evidence verified
+        <CheckIcon className="h-3 w-3" />
+        evidence verified
       </Pill>
     );
   }
-  const tone = verdict === "NOT_SUPPORTED" ? "against" : "unknown";
-  const label = verdict === "NOT_SUPPORTED" ? "✕ evidence does not support this" : "~ partially supported";
+  if (verdict === "NOT_SUPPORTED") {
+    return (
+      <Pill tone="against" title={reason ?? undefined}>
+        <CrossIcon className="h-3 w-3" />
+        evidence does not support this
+      </Pill>
+    );
+  }
   return (
-    <Pill tone={tone} title={reason ?? undefined}>
-      {label}
+    <Pill tone="unknown" title={reason ?? undefined}>
+      <WarnIcon className="h-3 w-3" />
+      partially supported
     </Pill>
   );
 }
@@ -166,10 +201,12 @@ export function ReviewControls({
         onClick={() => onReview({ status: "REVIEWER_ACCEPTED" })}
         title="Confirm this as reviewed evidence"
       >
-        ✓ Accept
+        <CheckIcon className="h-3 w-3" />
+        Accept
       </Button>
       <Button size="sm" onClick={startEdit} busy={busy} title="Correct the value">
-        ✎ {editLabel}
+        <PencilIcon className="h-3 w-3" />
+        {editLabel}
       </Button>
       <Button
         size="sm"
@@ -178,7 +215,8 @@ export function ReviewControls({
         onClick={() => onReview({ status: "REVIEWER_REJECTED" })}
         title="Exclude this from the assessment"
       >
-        ✕ Reject
+        <CrossIcon className="h-3 w-3" />
+        Reject
       </Button>
       {decided && (
         <button
@@ -258,7 +296,8 @@ export function ReviewableCard({
       <div className="mt-2 space-y-1.5">
         {item.ai?.value && (
           <p className="text-[13px] leading-snug">
-            <span className="mr-1.5 text-[10px] uppercase tracking-wider text-violet-300">
+            <span className="mr-1.5 inline-flex items-center gap-1 align-middle text-[10px] uppercase tracking-wider text-violet-300">
+              <AiIcon className="h-2.5 w-2.5" />
               AI suggested
             </span>
             <span className={rejected ? "text-slate-muted line-through" : "text-slate-soft"}>

@@ -59,7 +59,7 @@ export default function Investigation({
               busy={busyKey === "suggest-dimensions"}
               onClick={() => suggest("dimensions")}
             >
-              {doc.dimensions.length ? "Re-run analysis" : "✨ Analyse dimensions"}
+              {doc.dimensions.length ? "Re-run analysis" : "Analyse dimensions"}
             </Button>
             {stats.dimensions_pending > 0 && (
               <Button

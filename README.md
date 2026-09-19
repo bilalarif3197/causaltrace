@@ -62,14 +62,15 @@ autonomous classifier with a confirmation dialog bolted on.
 
 | State | Meaning |
 | --- | --- |
-| ✨ AI suggested | Proposed, not yet reviewed. Contributes nothing. |
-| ✓ Reviewer confirmed | Accepted as-is. |
-| ✎ Reviewer modified | Corrected. The original suggestion is retained beside it. |
-| ✕ Reviewer rejected | Excluded. Never reaches downstream assessment or the rationale drafter. |
-| ? Unknown | Explicitly not determinable. |
-| ⚠ Needs review | Verification could not confirm the cited evidence. Flagged, never deleted. |
+| AI suggested | Proposed, not yet reviewed. Contributes nothing. |
+| Reviewer confirmed | Accepted as-is. |
+| Reviewer modified | Corrected. The original suggestion is retained beside it. |
+| Reviewer rejected | Excluded. Never reaches downstream assessment or the rationale drafter. |
+| Unknown | Explicitly not determinable. |
+| Needs review | Verification could not confirm the cited evidence. Flagged, never deleted. |
 
-Status is carried by glyph, word **and** colour, so it survives greyscale and colour-blindness.
+Each state is carried by an icon, a word **and** a colour, so it survives greyscale printing and
+colour-blindness.
 
 ---
 
@@ -122,13 +123,13 @@ Reviewer decisions persist to SQLite, so a review survives a restart and can be 
 ## Demo script
 
 1. Open `http://localhost:3000`, load **"TMP-SMX and acute liver injury"**, click **Start case review**.
-2. **Evidence** → *Extract evidence*. ~27 candidate facts arrive, all `✨ AI suggested`. Note
+2. **Evidence** → *Extract evidence*. ~27 candidate facts arrive, all marked **AI suggested**. Note
    the Naranjo chip in the header still reads **0** — nothing is evidence yet.
 3. Accept most, **edit** one, **reject** one. The AI's original value stays visible beside yours.
-4. Anything the verifier could not confirm is `⚠ Needs review` with the reason shown.
+4. Anything the verifier could not confirm is flagged **Needs review** with the reason shown.
 5. **Timeline** → *Build timeline*. Reorder an event, change one to *Approximate*; it is labelled
    "timing uncertain" rather than given an invented date.
-6. **Investigation** → four dimensions answered separately. Note rechallenge is `UNKNOWN`, not a
+6. **Investigation** → four dimensions answered separately. Note rechallenge is UNKNOWN, not a
    negative — absence of a rechallenge is not evidence against causality.
 7. **Competing causes** → the graph draws edges from *your* assessments; unassessed hypotheses
    stay faint. Set acetaminophen to *Weakly supported* and watch its edge change.

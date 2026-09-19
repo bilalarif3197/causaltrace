@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import * as api from "@/lib/api";
-import { Button, Callout, Field, Panel, Pill, inputClass } from "../ui";
+import { AiIcon, Button, Callout, CheckIcon, Field, Panel, Pill, inputClass } from "../ui";
 import type { StepProps } from "./types";
 
 const ASSESSMENTS = [
@@ -115,7 +115,8 @@ export default function Conclusion({ envelope, run, suggest, busyKey }: StepProp
             busy={busyKey === "suggest-rationale"}
             onClick={() => suggest("rationale")}
           >
-            ✨ {c.ai_draft_rationale ? "Re-draft" : "Draft rationale"}
+            <AiIcon className="h-3 w-3" />
+            {c.ai_draft_rationale ? "Re-draft" : "Draft rationale"}
           </Button>
         }
       >
@@ -180,7 +181,10 @@ export default function Conclusion({ envelope, run, suggest, busyKey }: StepProp
           >
             {c.signed_off ? "Reopen case" : "Sign off conclusion"}
           </Button>
-          {c.signed_off && <Pill tone="support">✓ signed off</Pill>}
+          {c.signed_off && <Pill tone="support">
+            <CheckIcon className="h-3 w-3" />
+            signed off
+          </Pill>}
           {!c.final_assessment && (
             <span className="text-[11px] text-slate-muted">
               Select a final assessment first.

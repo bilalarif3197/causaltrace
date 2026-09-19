@@ -9,15 +9,18 @@ import {
   type Hypothesis,
   type HypothesisEvidence,
 } from "@/lib/review";
-import { Button, EmptyState, Field, Panel, Pill, inputClass } from "../ui";
+import { AiIcon, Button, CheckIcon, EmptyState, Field, Panel, Pill, QuestionIcon, WarnIcon, inputClass } from "../ui";
 import { SourceQuote, StatusChip } from "../review";
 import CausalGraph from "../CausalGraph";
 import type { StepProps } from "./types";
 
-const VALENCE_META: Record<EvidenceValence, { label: string; glyph: string; tone: string }> = {
-  SUPPORTING: { label: "Supports", glyph: "✓", tone: "text-support-400" },
-  CONTRADICTING: { label: "Argues against", glyph: "⚠", tone: "text-against-400" },
-  UNKNOWN: { label: "Not reported", glyph: "?", tone: "text-unknown-400" },
+const VALENCE_META: Record<
+  EvidenceValence,
+  { label: string; icon: (p: { className?: string }) => React.ReactElement; tone: string }
+> = {
+  SUPPORTING: { label: "Supports", icon: CheckIcon, tone: "text-support-400" },
+  CONTRADICTING: { label: "Argues against", icon: WarnIcon, tone: "text-against-400" },
+  UNKNOWN: { label: "Not reported", icon: QuestionIcon, tone: "text-unknown-400" },
 };
 
 function EvidenceList({
@@ -41,9 +44,7 @@ function EvidenceList({
   return (
     <div>
       <div className="mb-1.5 flex items-center gap-2">
-        <span className={`text-[13px] ${meta.tone}`} aria-hidden>
-          {meta.glyph}
-        </span>
+        <meta.icon className={`h-3.5 w-3.5 ${meta.tone}`} />
         <h4 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-soft">
           {meta.label}
         </h4>
@@ -143,7 +144,8 @@ function HypothesisPanel({
           <StatusChip status={hypothesis.reviewer_status} />
           {hypothesis.ai_assessment && (
             <span className="text-[10.5px] text-violet-300">
-              ✨ AI: {hypothesis.ai_assessment}
+              <AiIcon className="h-2.5 w-2.5" />
+              AI: {hypothesis.ai_assessment}
             </span>
           )}
         </div>
@@ -249,7 +251,7 @@ export default function Hypotheses({
               busy={busyKey === "suggest-hypotheses"}
               onClick={() => suggest("hypotheses")}
             >
-              {doc.hypotheses.length ? "Re-run suggestions" : "✨ Suggest causes"}
+              {doc.hypotheses.length ? "Re-run suggestions" : "Suggest causes"}
             </Button>
             <Button size="sm" onClick={() => setAdding((v) => !v)}>
               + Add cause
