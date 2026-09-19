@@ -393,7 +393,48 @@ What a mock run genuinely demonstrates: the harness works end to end, the metric
 and the deterministic scorer reproduces its inputs. Nothing about accuracy. Use live mode
 (above) for numbers that are at least *measured*, even if still tuned and tiny.
 
-**To get real numbers:** add cases to `evaluation/cases.json` from the
+### Harvesting real cases from PMC
+
+`evaluation/pmc_ingest.py` automates the route the starter sheet recommends:
+
+```bash
+backend/.venv/bin/python evaluation/pmc_ingest.py --limit 40
+# review evaluation/pmc_candidates.json, then:
+backend/.venv/bin/python evaluation/pmc_ingest.py --append --from evaluation/pmc_candidates.json
+```
+
+It searches PubMed for `Case Reports` in the OA subset that mention Naranjo or WHO-UMC,
+resolves PMIDs to PMCIDs via the official converter, pulls full text through the BioC API,
+and extracts both the patient narrative and any self-reported causality assessment. On a
+12-article sample it produced 10 usable candidates.
+
+**Access is via official interfaces only** — E-utilities, the ID converter, `efetch`, and
+the BioC API. The PMC website is never scraped, requests are throttled with exponential
+backoff (3/s, or 10/s with `NCBI_API_KEY`), and everything is cached, so a re-run costs
+NCBI nothing.
+
+Three safeguards worth knowing about, each prompted by something real in the data:
+
+- **Nothing is trusted without review.** Every record is written `needs_review: true`
+  alongside the verbatim sentence its score was parsed from. `--append` refuses to add
+  unreviewed records, because an unchecked regex silently becoming your ground truth is
+  worse than having no ground truth.
+- **Licences are checked, and article text is never committed.** The OA subset is not
+  uniformly CC-BY — 2 of 10 in the sample were **CC BY-NC-ND**, where "No Derivatives"
+  makes redistributing the text in this repo a real problem. Narratives are cached in a
+  gitignored directory and `cases.json` stores only a PMCID pointer unless the licence
+  clearly permits redistribution. Text *mining* is fine across the subset; redistribution
+  is the restricted part.
+- **Published values are checked against each other.** One article in the sample reports a
+  Naranjo score of 4 while calling it "probable" — but 4 is *Possible* on the published
+  scale. Self-reported reference standards contain errors, so score/band disagreements are
+  flagged rather than silently accepted.
+
+`truststore` is a dev dependency because NCBI serves a cross-signed chain whose root is
+absent from `certifi`; the OS trust store validates it correctly where the bundled one
+cannot.
+
+**Or add cases by hand** to `evaluation/cases.json` from the
 [PMC Open Access Subset](https://pmc.ncbi.nlm.nih.gov/tools/openftlist) — filter PubMed to the
 `Case Reports` publication type, restrict to the OA subset, and keep those that state their
 own Naranjo score or WHO-UMC category. Set `reference_source` to `published` with the PMCID.

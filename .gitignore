@@ -22,3 +22,8 @@ out/
 
 # Evaluation output
 evaluation/results/
+
+# Harvested PMC content. Article text is third-party and the OA subset includes
+# NC/ND licences, so cached full text and narratives are never committed.
+evaluation/.pmc_cache/
+evaluation/pmc_candidates.json

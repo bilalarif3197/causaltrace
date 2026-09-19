@@ -65,3 +65,22 @@ mid-list renumbers everything after it.
   banner, and do not quote mock numbers as accuracy.
 - Never describe the system as establishing causation, diagnosing, or replacing a clinician.
 - Demo cases use drug-class labels ("Drug A, an oral antifungal agent"), never product names.
+
+## Harvesting real cases (evaluation/pmc_ingest.py)
+
+Official NCBI interfaces only: E-utilities, the PMC ID converter, efetch, the BioC API.
+Never scrape the PMC website — it is prohibited and gets the IP blocked. Requests are
+throttled with backoff and cached under `evaluation/.pmc_cache/` (gitignored).
+
+Three rules that must not be relaxed:
+
+1. **Auto-parsed scores are candidates, not references.** Records carry `needs_review:
+   true` plus the sentence the value came from. `--append` refuses unreviewed records.
+2. **Never commit harvested article text.** The OA subset includes CC BY-NC-ND. Narratives
+   live in the gitignored cache; `cases.json` holds a PMCID pointer unless the licence
+   clearly permits redistribution. `evaluate.py` resolves narratives from that cache.
+3. **Published references can be wrong.** Score/band disagreements (e.g. "score 4 ...
+   probable", where 4 is Possible) are flagged via `internal_inconsistency`.
+
+`truststore` is required: NCBI's cross-signed chain fails certifi validation but passes
+against the OS trust store.

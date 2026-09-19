@@ -54,21 +54,48 @@ DATASET = Path(__file__).resolve().parent / "cases.json"
 STRONG = {"Definite", "Probable"}
 
 
+NARRATIVE_CACHE = Path(__file__).resolve().parent / ".pmc_cache" / "narratives"
+
+
 def load_cases() -> tuple[dict, list[dict]]:
+    """Resolve each case's narrative, in order of preference.
+
+    1. Inlined in cases.json.
+    2. A built-in demo case, whose text lives in backend/services/cases.py so
+       there is a single source of truth.
+    3. The gitignored PMC narrative cache. Harvested article text is
+       third-party content under assorted licences (the OA subset includes
+       CC BY-NC-ND), so it is deliberately never committed.
+    """
     data = json.loads(DATASET.read_text())
     rows = []
+    missing: list[str] = []
+
     for case in data["cases"]:
         narrative = case.get("narrative")
         if not narrative:
-            # Dev cases keep their text in the backend module so there is one
-            # source of truth for the narrative.
             builtin = builtin_cases.get(case["case_id"])
-            if builtin is None:
-                raise SystemExit(
-                    f"Case '{case['case_id']}' has no inline narrative and no built-in match."
-                )
-            narrative = builtin.narrative
+            if builtin is not None:
+                narrative = builtin.narrative
+        if not narrative and case.get("pmcid"):
+            cached = NARRATIVE_CACHE / f"{case['pmcid']}.txt"
+            if cached.is_file():
+                narrative = cached.read_text(encoding="utf-8")
+            else:
+                missing.append(case["case_id"])
+                continue
+        if not narrative:
+            missing.append(case["case_id"])
+            continue
         rows.append({**case, "narrative": narrative})
+
+    if missing:
+        print(
+            f"warning: skipped {len(missing)} case(s) with no available narrative "
+            f"({', '.join(missing[:5])}{'...' if len(missing) > 5 else ''}).\n"
+            f"         Re-fetch the text with: python evaluation/pmc_ingest.py",
+            file=sys.stderr,
+        )
     return data["dataset"], rows
 
 

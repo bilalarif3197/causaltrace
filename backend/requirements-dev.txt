@@ -1,2 +1,6 @@
 -r requirements.txt
 pytest==8.3.4
+
+# For evaluation/pmc_ingest.py: NCBI serves a cross-signed chain that certifi
+# cannot validate, so the OS trust store is used instead.
+truststore==0.10.4
