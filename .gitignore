@@ -27,3 +27,6 @@ evaluation/results/
 # NC/ND licences, so cached full text and narratives are never committed.
 evaluation/.pmc_cache/
 evaluation/pmc_candidates.json
+backend/causaltrace.db
+backend/causaltrace.db-wal
+backend/causaltrace.db-shm

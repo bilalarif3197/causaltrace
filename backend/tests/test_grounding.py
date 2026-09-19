@@ -76,11 +76,19 @@ def test_empty_quote_returns_none():
 
 
 def test_offsets_round_trip_for_all_fixture_cases():
-    """Every span the API would return must slice back to its own text."""
+    """Every span the API would return must slice back to its own text.
+
+    Scoped to cases that actually have recorded fixtures -- demo cases added
+    for the live workspace (e.g. the TMP-SMX case) have none by design.
+    """
     from services import cases
 
     client = MockClient()
-    for case in cases.EXAMPLE_CASES:
+    recorded = set(client.available_cases())
+    covered = [c for c in cases.EXAMPLE_CASES if c.case_id in recorded]
+    assert covered, "no fixture-backed cases to check"
+
+    for case in covered:
         result = run_analysis(
             client,
             AnalyzeRequest(

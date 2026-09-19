@@ -31,10 +31,38 @@
       "reference_item_answers": "map of Naranjo item number -> YES|NO|UNKNOWN, or null",
       "reference_source": "'published' (with pmcid) or 'author-assigned'",
       "pmcid": "PMC identifier when reference_source is 'published', else null",
-      "notes": "why this case is in the set"
+      "notes": "why this case is in the set",
+      "documented_alternatives": "competing causes the narrative documents, for alternative-cause recall"
     }
   },
   "cases": [
+    {
+      "case_id": "tmpsmx-dili-004",
+      "suspected_drug": "Trimethoprim-sulfamethoxazole (TMP-SMX)",
+      "adverse_event": "Acute liver injury",
+      "reference_naranjo_score": 3,
+      "reference_naranjo_category": "Possible",
+      "reference_who_umc": "Possible",
+      "reference_item_answers": {
+        "1": "UNKNOWN",
+        "2": "YES",
+        "3": "YES",
+        "4": "UNKNOWN",
+        "5": "YES",
+        "6": "UNKNOWN",
+        "7": "UNKNOWN",
+        "8": "UNKNOWN",
+        "9": "NO",
+        "10": "YES"
+      },
+      "documented_alternatives": [
+        "acetaminophen",
+        "oral contraceptive"
+      ],
+      "reference_source": "author-assigned",
+      "pmcid": null,
+      "notes": "Named-generic case. Positive dechallenge, viral and autoimmune workup negative, but low-dose acetaminophen remains an unexcluded alternative and no rechallenge was performed. Item 5 is YES because acetaminophen is documented and untested. Reference score corrected from 5 to 3 after an internal-consistency check: the listed item answers sum to 3."
+    },
     {
       "case_id": "dili-ambiguous-001",
       "suspected_drug": "Drug A",
@@ -56,7 +84,11 @@
       },
       "reference_source": "author-assigned",
       "pmcid": null,
-      "notes": "Two plausible culprit drugs plus a documented infection. Tests whether a system will commit to the suspected drug when a competing explanation was never excluded. The decisive trap is item 5: answering NO rather than YES inflates the score by 3 points and moves the band."
+      "notes": "Two plausible culprit drugs plus a documented infection. Tests whether a system will commit to the suspected drug when a competing explanation was never excluded. The decisive trap is item 5: answering NO rather than YES inflates the score by 3 points and moves the band.",
+      "documented_alternatives": [
+        "Drug B",
+        "pneumonia"
+      ]
     },
     {
       "case_id": "cutaneous-clear-002",
@@ -79,7 +111,10 @@
       },
       "reference_source": "author-assigned",
       "pmcid": null,
-      "notes": "Positive dechallenge and positive rechallenge with no concomitant drugs. A control for over-abstention: a system that hedges here is miscalibrated in the other direction. Note item 5 is a legitimate NO because the narrative positively excludes alternatives rather than merely omitting them."
+      "notes": "Positive dechallenge and positive rechallenge with no concomitant drugs. A control for over-abstention: a system that hedges here is miscalibrated in the other direction. Note item 5 is a legitimate NO because the narrative positively excludes alternatives rather than merely omitting them.",
+      "documented_alternatives": [
+        "urinary tract infection"
+      ]
     },
     {
       "case_id": "aki-sparse-003",
@@ -102,7 +137,12 @@
       },
       "reference_source": "author-assigned",
       "pmcid": null,
-      "notes": "An information-poor report with three overlapping causes. Seven of ten items are UNKNOWN and the resolved-score range spans all four bands, so the point score is close to meaningless. Primarily a test of the correct-UNKNOWN rate."
+      "notes": "An information-poor report with three overlapping causes. Seven of ten items are UNKNOWN and the resolved-score range spans all four bands, so the point score is close to meaningless. Primarily a test of the correct-UNKNOWN rate.",
+      "documented_alternatives": [
+        "contrast",
+        "hypotension",
+        "bloodstream infection"
+      ]
     }
   ]
 }

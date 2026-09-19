@@ -19,16 +19,33 @@ the three built-in cases work. A custom narrative returns 422 by design, not by 
 ## Verify (run all four before calling anything done)
 
 ```bash
-cd backend && .venv/bin/python -m pytest -q          # 69 tests
+cd backend && .venv/bin/python -m pytest -q          # 134 tests
 cd backend && .venv/bin/python validate_fixtures.py  # 136 quotes must be verbatim
 cd frontend && npx tsc --noEmit && npm run build
-backend/.venv/bin/python evaluation/evaluate.py
+backend/.venv/bin/python evaluation/evaluate_assistance.py
 ```
+
+Cases persist to `backend/causaltrace.db` (SQLite, gitignored). Tests use a temp DB via
+`tests/conftest.py`.
 
 Python venv lives at `backend/.venv` (Python 3.13). Frontend is Next.js 16 + React 19 +
 Tailwind 4 + `@xyflow/react`, all pinned exactly.
 
-## Invariants — do not break these
+## The product invariant
+
+**AI organizes and suggests. The reviewer investigates and decides.** There must be no
+endpoint or UI path that turns a narrative straight into a causality verdict.
+
+Every reviewable entity holds an immutable `AiSuggestion` beside a separate reviewer slot.
+`confirmed_value` returns None unless a human accepted or modified it, and downstream
+assessment may read nothing else. A reviewer action must never write to `ai`. If an
+unreviewed suggestion can move a score, the product has regressed into an autonomous
+classifier with a confirmation dialog.
+
+Re-running a suggestion stage must keep reviewed items, refresh only the AI half of
+untouched ones, and add new candidates. Bulk actions touch pending items only.
+
+## Other invariants — do not break these
 
 1. **The LLM never computes the Naranjo total.** It answers items; `naranjo.score_items()`
    sums them in pure Python from the published weight table. Keep those halves separate.
