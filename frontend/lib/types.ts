@@ -95,6 +95,7 @@ export interface NaranjoItem {
   evidence_text: string | null;
   span: SourceSpan | null;
   verdict: Verdict | null;
+  verdict_reason: string | null;
   commonly_unknown: boolean;
 }
 

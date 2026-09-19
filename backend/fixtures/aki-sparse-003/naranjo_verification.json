@@ -1,0 +1,7 @@
+{
+  "verdicts": [
+    { "id": "item2", "verdict": "SUPPORTED", "reason": "The past-perfect phrasing establishes the drug was being given before the injury developed." },
+    { "id": "item5", "verdict": "SUPPORTED", "reason": "The quote documents concurrent contrast exposure, an alternative cause sufficient on its own." },
+    { "id": "item10", "verdict": "SUPPORTED", "reason": "Serial creatinine values objectively confirm the event." }
+  ]
+}

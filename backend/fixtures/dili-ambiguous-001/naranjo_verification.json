@@ -1,0 +1,9 @@
+{
+  "verdicts": [
+    { "id": "item2", "verdict": "SUPPORTED", "reason": "The quote states Drug A was started on 3 January, establishing exposure before the 18 January onset." },
+    { "id": "item3", "verdict": "SUPPORTED", "reason": "The quote describes the outcome after withdrawal -- enzymes declining and normalising -- which is what this item asks about." },
+    { "id": "item5", "verdict": "SUPPORTED", "reason": "The quote documents a radiographically confirmed pneumonia, an alternative cause sufficient on its own." },
+    { "id": "item9", "verdict": "SUPPORTED", "reason": "The quote documents prior exposure to a related agent without a similar reaction, establishing NO." },
+    { "id": "item10", "verdict": "SUPPORTED", "reason": "The quote gives laboratory values objectively confirming the event." }
+  ]
+}

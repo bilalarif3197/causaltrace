@@ -87,6 +87,16 @@ def run_analysis(client, req: AnalyzeRequest) -> AnalysisResult:
         adverse_event=req.adverse_event,
         case_id=case_id,
     )
+    # Audit the item citations before scoring. The span locator only proved the
+    # quotes exist; this checks they establish the answers they were cited for.
+    items = verifier.verify_answers(client, narrative=narrative, items=items, case_id=case_id)
+    rejected_items = [i.number for i in items if i.verdict is not None and i.verdict.value == "NOT_SUPPORTED"]
+    if rejected_items:
+        warnings.append(
+            f"Naranjo item(s) {', '.join(map(str, rejected_items))} were answered with a citation "
+            "that does not establish the answer, and were reset to UNKNOWN."
+        )
+
     naranjo_result = naranjo.score_items(items)  # deterministic, pure Python
 
     if not naranjo_result.classification_is_stable:

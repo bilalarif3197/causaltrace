@@ -102,6 +102,83 @@ def verify(client, *, narrative: str, claims: list[Claim], case_id: str | None) 
     return claims
 
 
+NARANJO_SYSTEM = """You are a strict verifier auditing answers to the Naranjo ADR Probability Scale.
+
+For each item you are given the question, the answer given, and the quote cited for it.
+Decide only whether that quote establishes that specific answer to that specific item.
+
+- SUPPORTED: the quote directly establishes this answer.
+- NOT_SUPPORTED: the quote is about a different proposition, or supports only the general
+  topic rather than the claim. Two examples that must be rejected:
+    * item 3 (did the event improve after withdrawal) cited to a quote that says only that
+      the drug was discontinued -- stopping is not improving;
+    * item 4 or 6 answered NO where the quote shows the rechallenge or placebo was never
+      performed -- "not done" does not establish "done, and negative".
+- AMBIGUOUS: related but does not settle it.
+
+One exception, for a structural reason. Item 5 (alternative causes) answered NO is a
+GLOBAL negative: "nothing else could have caused this." A global negative can rarely be
+established by a single sentence, so for item 5 only, judge the answer against the WHOLE
+narrative, treating the quote as the primary anchor rather than the sole evidence. If the
+narrative taken together affirmatively excludes alternatives -- no concomitant drugs, no
+relevant history, a workup that ruled other causes out, or a positive rechallenge that no
+alternative explains -- then NO is SUPPORTED even though one sentence does not carry it
+alone. Every other item is judged on its quote.
+
+Audit, do not assist. Do not repair a weak answer and do not use outside clinical
+knowledge beyond the narrative. An answer that is clinically reasonable but not
+established by its evidence is NOT_SUPPORTED."""
+
+
+def verify_answers(client, *, narrative: str, items: list, case_id: str | None) -> list:
+    """Audit Naranjo item citations, the same way claims are audited.
+
+    Without this, a Naranjo answer only had to clear the span locator -- i.e. its quote
+    had to *exist*, not to be *relevant*. A live run surfaced exactly that gap: item 3
+    ("did the event improve after withdrawal?") answered YES on the strength of a quote
+    that established only that the drug had been stopped.
+
+    An item whose citation fails is set to UNKNOWN, so it scores 0. The rejected quote
+    and the reason are retained for the audit trail rather than discarded, because
+    "answered, then rejected, and why" is more useful to a human reviewer than silence.
+    """
+    from schemas.models import Answer, Verdict as V
+
+    targets = [
+        i for i in items if i.answer is not Answer.UNKNOWN and i.span is not None and i.span.located
+    ]
+    if not targets:
+        return items
+
+    block = "\n\n".join(
+        f"id: item{i.number}\nitem {i.number}: {i.question}\nanswer given: {i.answer.value}\n"
+        f"cited evidence: \"{i.evidence_text}\""
+        for i in targets
+    )
+    raw = client.complete_json(
+        stage="naranjo_verification",
+        system=NARANJO_SYSTEM,
+        user=f"NARRATIVE:\n\"\"\"\n{narrative}\n\"\"\"\n\nAudit each item answer below.\n\n{block}",
+        schema=SCHEMA,
+        schema_name="naranjo_verification",
+        case_id=case_id,
+    )
+
+    by_id = {r.get("id"): r for r in raw.get("verdicts", [])}
+    for item in targets:
+        row = by_id.get(f"item{item.number}")
+        if not row:
+            item.verdict = V.AMBIGUOUS
+            item.verdict_reason = "Verifier returned no verdict for this item."
+            continue
+        item.verdict = V(row.get("verdict", "AMBIGUOUS"))
+        item.verdict_reason = row.get("reason", "")
+        if item.verdict is V.NOT_SUPPORTED:
+            # An answer whose citation does not establish it must not move the score.
+            item.answer = Answer.UNKNOWN
+    return items
+
+
 def summarize(claims: list[Claim]) -> VerificationSummary:
     s = VerificationSummary(total_claims=len(claims))
     for c in claims:

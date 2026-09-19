@@ -1,0 +1,11 @@
+{
+  "verdicts": [
+    { "id": "item1", "verdict": "SUPPORTED", "reason": "The quote explicitly cites published literature for this drug class." },
+    { "id": "item2", "verdict": "SUPPORTED", "reason": "The quote gives the first dose on 2 March, before the 5 March onset." },
+    { "id": "item3", "verdict": "SUPPORTED", "reason": "The quote describes full resolution after withdrawal, which is the outcome this item asks about." },
+    { "id": "item4", "verdict": "SUPPORTED", "reason": "The quote documents recurrence within twelve hours of re-exposure in the same distribution -- an actual rechallenge, positively established." },
+    { "id": "item5", "verdict": "SUPPORTED", "reason": "The quote positively excludes concomitant medication rather than merely omitting it, which is what NO requires." },
+    { "id": "item9", "verdict": "SUPPORTED", "reason": "The quote reports a prior reaction to a structurally related agent." },
+    { "id": "item10", "verdict": "SUPPORTED", "reason": "The quote documents clinician examination and photographic records." }
+  ]
+}

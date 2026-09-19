@@ -231,6 +231,66 @@ def test_summary_counts_dropped_and_unlocatable():
 # ---------------------------------------------------------------------------
 
 
+def test_naranjo_item_with_real_but_irrelevant_quote_is_rejected():
+    """Regression from a live DeepSeek run: item 3 ("did the event improve after
+    withdrawal?") was answered YES citing a quote that established only that the
+    drug had been stopped. The span locator passes it -- the quote is genuinely in
+    the text -- so only the semantic audit can catch it."""
+    items = [
+        naranjo.NaranjoItem(
+            number=3,
+            question=naranjo.ITEMS_BY_NUMBER[3].question,
+            answer=Answer.YES,
+            evidence_text="The patient started Drug A on 3 January",
+            span=locate_span(NARRATIVE, "The patient started Drug A on 3 January"),
+        )
+    ]
+    assert items[0].span.located  # gate 1 passes
+
+    client = StubClient(
+        {
+            "verdicts": [
+                {
+                    "id": "item3",
+                    "verdict": "NOT_SUPPORTED",
+                    "reason": "The quote establishes initiation, not improvement after withdrawal.",
+                }
+            ]
+        }
+    )
+    [out] = verifier.verify_answers(client, narrative=NARRATIVE, items=items, case_id=None)
+    assert out.answer is Answer.UNKNOWN
+    assert out.verdict is Verdict.NOT_SUPPORTED
+    assert "improvement" in out.verdict_reason
+    # The rejected quote is retained for the audit trail.
+    assert out.evidence_text is not None
+    # And it must score zero rather than the +1 a YES would have carried.
+    assert naranjo.score_items(
+        [out] + [
+            naranjo.NaranjoItem(number=n, question=naranjo.ITEMS_BY_NUMBER[n].question)
+            for n in range(1, 11) if n != 3
+        ]
+    ).total_score == 0
+
+
+def test_naranjo_verification_skips_unknown_items():
+    """UNKNOWN answers assert nothing, so there is nothing to audit and no
+    reason to spend tokens on them."""
+    items = [
+        naranjo.NaranjoItem(number=n, question=naranjo.ITEMS_BY_NUMBER[n].question)
+        for n in range(1, 11)
+    ]
+
+    class Boom:
+        mode = "mock"
+        name = "boom"
+
+        def complete_json(self, **kwargs):
+            raise AssertionError("verifier should not have been called")
+
+    assert verifier.verify_answers(Boom(), narrative=NARRATIVE, items=items, case_id=None) == items
+
+
 def test_naranjo_answer_with_fabricated_quote_is_forced_to_unknown():
     """Item 4 answered YES (+2) on a fabricated quote must score 0, not +2."""
     payload = {

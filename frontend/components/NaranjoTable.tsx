@@ -154,7 +154,12 @@ export default function NaranjoTable({
                   <td className="py-2.5 pr-3">
                     <AnswerChip answer={item.answer} />
                     {item.verdict === "NOT_SUPPORTED" && (
-                      <p className="mt-1 text-[10px] text-against-400">citation rejected</p>
+                      <p className="mt-1 text-[10px] font-medium text-against-400">
+                        citation rejected → reset to UNKNOWN
+                      </p>
+                    )}
+                    {item.verdict === "AMBIGUOUS" && (
+                      <p className="mt-1 text-[10px] text-unknown-400">citation ambiguous</p>
                     )}
                   </td>
                   <td className="py-2.5 pr-3 text-right font-mono text-[12px]">

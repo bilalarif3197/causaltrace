@@ -78,7 +78,13 @@ Absolute rules:
   is typical for the drug or the condition.
 - Emit a separate claim per concomitant drug, per infection, and per lab abnormality
   rather than bundling them into one.
-- status is SUPPORTED only when you have a genuine verbatim quote."""
+- status is SUPPORTED only when you have a genuine verbatim quote.
+- The `claim` text must state a FACT, never an interpretation. The slot already carries
+  the interpretation, so do not restate it in the claim.
+    Wrong: "Pneumonia is a potential alternative cause."   (the narrative never says this)
+    Right: "Pneumonia was documented on chest radiograph." (slot: alternative_causes)
+  An independent auditor checks each claim against its quote and rejects any claim
+  asserting more than the quote literally says -- including causal framing you added."""
 
 
 def extract(client, *, narrative: str, suspected_drug: str, adverse_event: str, case_id: str | None) -> list[Claim]:

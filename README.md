@@ -224,7 +224,7 @@ backend/
     llm_client.py          the only seam to a provider; OpenAI + Mock
     spans.py               deterministic quote -> character-offset resolution
     extractor.py           stage 1: structured evidence extraction
-    verifier.py            stage 4: independent claim audit
+    verifier.py            independent audit of claims AND Naranjo answers
     timeline.py            stage 2: chronology, relative ordering preserved
     hypotheses.py          stage 3: competing causes, qualitative strength
     naranjo.py             published weight table + pure-Python scorer
@@ -254,8 +254,10 @@ evaluation/
 ```
 
 **Pipeline order is load-bearing:** extraction → verification → timeline → hypotheses →
-Naranjo → WHO-UMC. Verification runs before the user sees any claim, and Naranjo answers are
-span-checked independently inside `answer_items`.
+Naranjo answering → **Naranjo verification** → deterministic scoring → WHO-UMC. Claims are
+audited before the user sees them, and item answers are audited before they can move the
+score. Each stage is span-checked first, so an unlocatable quote never reaches an LLM
+verifier in the first place.
 
 Each stage has its own narrow prompt. There is deliberately no single agent prompt doing
 everything — extraction is told to be comprehensive, the verifier is told only to falsify, and
@@ -316,6 +318,69 @@ Reported metrics: category agreement, Naranjo exact / ±1 / MAE, item-level accu
 answered anyway — the dangerous direction), sensitivity for Probable/Definite, grounded-item
 rate, and unsupported assertion rate.
 
+### Live results (DeepSeek, n=3) — and why they are not as good as they look
+
+Run against `deepseek-flash` on the three dev cases:
+
+| Metric | CausalTrace | Baseline A | Baseline B |
+| --- | --- | --- | --- |
+| Category agreement | 1.000 | **1.000** | 0.667 |
+| Naranjo exact match | 1.000 | n/a | 0.000 |
+| Naranjo MAE | 0.000 | n/a | 1.000 |
+| Item-level accuracy | 1.000 | n/a | 0.900 |
+| Correct-UNKNOWN rate | 1.000 | n/a | 0.800 |
+| Over-commitment rate | 0.000 | n/a | 0.200 |
+| Grounded item rate | 0.500 | 0.000 | 0.000 |
+| Unsupported assertion rate | 0.024 | n/a | n/a |
+
+**I tuned the prompts against these three cases while debugging. These are therefore
+training-set numbers, not held-out performance, and the 1.000s should be read as "the
+known failure modes on these three cases are fixed" — nothing more.** With n=3 and no
+held-out split, they carry essentially no predictive weight. The first thing any serious
+evaluation needs is cases the prompts have never seen.
+
+Two results are more robust than the accuracy figures, because they are structural rather
+than tuned:
+
+- **Baseline B's self-reported total disagreed with the sum of its own item answers in 3
+  of 3 cases.** Not a hand-authored illustration — measured, every time. This is the
+  failure CausalTrace cannot have, because Python does the addition.
+- **Baseline A matched the reference category on all three cases.** Worth stating plainly:
+  on bare category agreement, the naive one-call baseline ties CausalTrace here. Its
+  deficit is everything else — no score, no per-item answers, no evidence trail, no
+  uncertainty, nothing to audit. If category agreement is all you need, you do not need
+  this system.
+
+### What the live runs actually caught
+
+Three real defects surfaced only under a live model, each fixed and pinned by a test:
+
+1. **Item 4 answered NO on "the patient was not re-exposed."** NO (−1) asserts the drug
+   *was* readministered without recurrence. Never readministered is UNKNOWN (0). The model
+   was penalising the drug for a rechallenge that never happened.
+2. **Item 3 answered YES citing "Drug A was discontinued on 20 January."** The quote
+   establishes the drug stopped, not that anything improved. The span locator passed it —
+   the quote is genuinely in the text — which exposed a gap: verification ran over
+   extraction claims but **not** over Naranjo answers. It does now.
+3. **The extractor was writing interpretations into claim text** ("pneumonia is a potential
+   alternative cause"), which the verifier then correctly rejected because the narrative
+   never says that. The interpretation belongs in the slot, not the claim. Fixing the
+   prompt to demand factual claim text dropped the unsupported assertion rate from
+   **0.121 to 0.030** on the same case.
+
+### A structural limit the live runs exposed
+
+Item 5 answered NO is a *global* negative — "nothing else could have caused this." A
+per-quote verifier structurally cannot validate that, because no single sentence carries
+it. The verifier initially rejected a correct NO on the grounds that "no other
+medications" does not establish that no alternative cause existed — which is, strictly,
+true.
+
+The fix was to judge item 5 against the whole narrative with the quote as anchor, rather
+than to weaken the verifier or tune until the number matched. The cleaner fix, not done
+here, is to let each item cite *multiple* quotes so a global claim can show all its
+support. Noted in Limitations.
+
 ### Read this before quoting any number
 
 **The current numbers are not a measurement of accuracy, and the harness says so on every
@@ -324,14 +389,9 @@ CausalTrace's fixtures and those references share an author — so its agreement
 and near-perfect by construction*. The baseline fixtures are likewise hand-authored
 illustrations of documented single-pass failure modes, not observed model output.
 
-What the current run genuinely demonstrates: the harness works end to end, the metrics
-compute, the deterministic scorer reproduces its inputs, and the comparison is structured to
-be informative once real data is added. Nothing more.
-
-The one structural result that is *not* an artefact of authorship: on the sparse case both
-CausalTrace and Baseline B arrive at a total of 2, but Baseline B answers NO to seven items
-the narrative never addresses, giving a 0.93 over-commitment rate against 0.00. Identical
-score, completely different epistemics — and only one of them tells you it is guessing.
+What a mock run genuinely demonstrates: the harness works end to end, the metrics compute,
+and the deterministic scorer reproduces its inputs. Nothing about accuracy. Use live mode
+(above) for numbers that are at least *measured*, even if still tuned and tiny.
 
 **To get real numbers:** add cases to `evaluation/cases.json` from the
 [PMC Open Access Subset](https://pmc.ncbi.nlm.nih.gov/tools/openftlist) — filter PubMed to the
@@ -350,8 +410,9 @@ flatter any system.
 ```bash
 cd backend
 .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/python -m pytest -q        # 39 tests
+.venv/bin/python -m pytest -q         # 69 tests
 .venv/bin/python validate_fixtures.py # 136 fixture quotes must be verbatim
+.venv/bin/python preflight.py         # one cheap call; checks provider config
 ```
 
 The tests pin the published weights, the −4..+13 range, every band boundary, the invariant
@@ -367,8 +428,16 @@ being real. It caught genuine authoring errors during development.
 
 Stated plainly, because a causality tool that oversells itself is worse than none.
 
-- **No real-world accuracy number exists yet.** See the evaluation section. This is the
-  biggest gap.
+- **No real-world accuracy number exists yet, and the numbers that do exist are tuned.**
+  The prompts were iterated against the same three synthetic cases the evaluation reports
+  on, with no held-out split. This is the biggest gap by a wide margin.
+- **Global-negative items cannot be properly verified.** Each item cites one quote, but
+  item 5 answered NO ("no alternative cause could explain this") is a claim about the
+  whole narrative. The current workaround has the verifier judge item 5 against the full
+  text; the real fix is multi-quote citations per item.
+- **Verification costs an extra LLM call per analysis and can itself over-reject.** It
+  rejected a correct item 5 before the workaround. Both gates are conservative by design,
+  which means they discard some true signal along with the false.
 - **Single-drug assessment.** Naranjo is applied to one suspected drug at a time. The
   competing-hypothesis graph surfaces other candidates but does not score each formally.
 - **Naranjo is a poor instrument for hepatotoxicity specifically.** It is not weighted for

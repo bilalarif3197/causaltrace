@@ -21,7 +21,15 @@ from services import cases  # noqa: E402
 from services.llm_client import FIXTURE_ROOT  # noqa: E402
 from services.spans import locate_span  # noqa: E402
 
-STAGES = ["extraction", "timeline", "hypotheses", "verification", "naranjo", "who_umc"]
+STAGES = [
+    "extraction",
+    "verification",
+    "timeline",
+    "hypotheses",
+    "naranjo",
+    "naranjo_verification",
+    "who_umc",
+]
 
 
 def walk_quotes(node, path="$"):

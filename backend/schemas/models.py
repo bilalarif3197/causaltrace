@@ -181,6 +181,7 @@ class NaranjoItem(BaseModel):
     evidence_text: Optional[str] = None
     span: Optional[SourceSpan] = None
     verdict: Optional[Verdict] = None
+    verdict_reason: Optional[str] = None
     commonly_unknown: bool = Field(
         default=False,
         description="True for the items answered 'unknown' >85% of the time in practice.",

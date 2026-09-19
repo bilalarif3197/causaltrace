@@ -19,7 +19,7 @@ the three built-in cases work. A custom narrative returns 422 by design, not by 
 ## Verify (run all four before calling anything done)
 
 ```bash
-cd backend && .venv/bin/python -m pytest -q          # 39 tests
+cd backend && .venv/bin/python -m pytest -q          # 69 tests
 cd backend && .venv/bin/python validate_fixtures.py  # 136 quotes must be verbatim
 cd frontend && npx tsc --noEmit && npm run build
 backend/.venv/bin/python evaluation/evaluate.py

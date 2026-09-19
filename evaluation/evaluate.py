@@ -38,6 +38,12 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "backend"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+# Load backend/.env explicitly. python-dotenv's search starts from the calling
+# file's directory, which is evaluation/, so the default would miss it.
+from dotenv import load_dotenv  # noqa: E402
+
+load_dotenv(ROOT / "backend" / ".env")
+
 from baselines import baseline_a, baseline_b  # noqa: E402
 from schemas.models import AnalyzeRequest  # noqa: E402
 from services import cases as builtin_cases  # noqa: E402
