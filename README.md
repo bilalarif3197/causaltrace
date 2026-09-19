@@ -1,0 +1,337 @@
+# CausalTrace
+
+**Evidence-grounded causality assessment for adverse drug event case narratives.**
+
+CausalTrace reads a published adverse-drug-event case narrative and produces a structured,
+auditable causality assessment: a reconstructed timeline, the competing explanations the
+narrative actually supports, formal Naranjo and WHO-UMC assessments, and an explicit account
+of what could not be determined. Every factual claim traces back to an exact span of the
+source text.
+
+> **This is a research prototype.** It does not establish medical causation, it is **not a
+> medical device**, and it is **not a clinical decision tool**. It is intended to support
+> human assessors, not replace them. The bundled example narratives are synthetic and contain
+> no patient-identifiable information.
+
+Built for the Regeneron HackMIT 2026 prize track ("Did the Drug Cause It? Automating
+Causality Assessment"). MIT licensed.
+
+---
+
+## The problem
+
+A temporal relationship is not causality. Consider:
+
+> Drug A starts. Drug B starts five days later. Two weeks after that the patient develops
+> liver injury. An infection is also documented. Drug A is stopped, Drug B continues, and
+> liver markers later improve.
+
+At least five explanations survive that narrative: Drug A, Drug B, the infection, an
+interaction, or insufficient evidence. A system that returns "probable — Drug A" has not
+assessed the case; it has discarded most of it.
+
+Two failure modes matter more than raw accuracy here:
+
+- **Confident wrongness.** General-purpose models produce fluent causality verdicts that
+  diverge from expert assessment. Fluency is not evidence.
+- **Missing data is the normal case.** In real pharmacovigilance practice, 4 of the 10 Naranjo
+  items are answered "unknown" over 85% of the time — rechallenge, placebo, drug levels, and
+  dose-response — and they are among the most heavily weighted. A system that only works on
+  complete cases solves nothing.
+
+CausalTrace is built around making both of those visible rather than papering over them.
+
+---
+
+## What makes this different from asking a model for a score
+
+**1. The model never computes the score.** It answers each of the 10 Naranjo items
+independently with YES / NO / UNKNOWN plus a supporting quote. The total is then summed in
+plain Python from the published weight table. A language model cannot mis-add a worksheet it
+never adds. (Our evaluation catches exactly this in the single-pass baseline, which
+self-reported a total of 4 where its own item answers summed to 2.)
+
+**2. Two independent gates stand between a model assertion and the user.**
+
+| Gate | Question | How |
+| --- | --- | --- |
+| Span locator | Does this quote exist in the source at all? | Deterministic string/fuzzy alignment, no LLM, no network |
+| Verifier | Granting it exists, does it *license* this claim? | A separate LLM pass told only to falsify |
+
+A claim failing either gate is converted to UNKNOWN, not silently deleted — the audit trail
+records that something was proposed and rejected. An ungrounded Naranjo answer is forced to
+UNKNOWN, so it scores 0 and cannot move the total by any path.
+
+The verifier earns its keep on cases like this one, from the bundled demo:
+
+> **Claim:** "Viral hepatitis was excluded as an alternative cause."
+> **Cited evidence:** *"Hepatitis A, B and C serologies were not obtained"*
+> **Verdict:** `NOT_SUPPORTED` — the quote says the tests were *not done*, which is the
+> opposite of exclusion. Untested is not excluded.
+
+That claim is clinically tempting, grammatically supported by a real quote, and wrong. It is
+the kind of error that inflates a causality score in the dangerous direction.
+
+**3. Uncertainty is quantified, not hedged.** Because every UNKNOWN item has a known possible
+weight range, we report the interval the total *could* occupy if the unknowns were resolved.
+On the ambiguous demo case the score is 3 ("Possible") but the interval is **[1, 9]** — which
+spans three classification bands. The UI says the classification is unstable, because it is.
+
+**4. Competing hypotheses are first-class.** Each candidate cause gets its own
+supports / argues-against / not-reported buckets, and the system is comfortable concluding
+that the evidence cannot distinguish two of them. Strength is a qualitative label; the schema
+literally cannot express "83% likely", because that number does not exist in this evidence.
+
+**5. Absence of evidence is never evidence of absence.** Naranjo item 5 (alternative causes)
+is answered NO only when the narrative *positively excludes* alternatives. Silence is
+UNKNOWN. This matters: flipping item 5 from YES to NO swings the total by 3 points and can
+move the band on its own — it is the single most consequential judgement in the scale, and
+the easiest to get wrong by default.
+
+---
+
+## Quickstart
+
+Requirements: Python 3.11+, Node.js 20.9+.
+
+**Backend**
+
+```bash
+cd backend
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/uvicorn main:app --reload --port 8000
+```
+
+**Frontend** (in a second terminal)
+
+```bash
+cd frontend
+npm install
+npm run dev          # http://localhost:3000
+```
+
+### Mock mode vs live mode
+
+With **no API key**, CausalTrace runs in **mock mode** and is fully demonstrable. This is not
+a canned screenshot: the mock client replays *stage-level model output* from
+`backend/fixtures/`, so the real extraction, span-locating, verification and deterministic
+scoring code all still execute. The limitation is honest and explicit — only the three
+built-in cases can be analysed, and pasting a custom narrative returns a `422` explaining why.
+
+For live analysis of arbitrary narratives:
+
+```bash
+cp .env.example backend/.env    # then set OPENAI_API_KEY
+```
+
+Any model supporting strict JSON-schema structured outputs works; override with
+`OPENAI_MODEL`. All provider code is isolated in `backend/services/llm_client.py` — swapping
+to another vendor means adding one subclass, and no service module imports a vendor SDK.
+
+---
+
+## Demo script
+
+1. Open `http://localhost:3000` and load **"Acute liver injury with two candidate drugs"**.
+2. Click **Analyze causality**.
+3. **Competing causes** — five hypotheses, not one verdict. Note that *"the available evidence
+   is insufficient to identify a single cause"* carries **Strong support**, and that Drug B is
+   argued *against* because the patient recovered while still taking it.
+4. Click any evidence bullet → the exact sentence highlights in the narrative on the left.
+   This works from every pane: hypotheses, timeline, Naranjo rows, extracted claims.
+5. **Naranjo** — 10 items answered individually with citations, a deterministic total of 3
+   ("Possible"), and the instability banner: 5 items UNKNOWN, true range [1, 9].
+6. **Extracted evidence** — one claim sits under *"Rejected by verification"* with the
+   verifier's reason. Kept visible, not hidden.
+7. Load **"Acute kidney injury, minimally reported"** for the abstention case: 7 of 10 items
+   UNKNOWN, range [0, 10] — spanning all four bands, so the point score means very little.
+8. Load **"Maculopapular rash with positive rechallenge"** for the contrast: a genuinely
+   strong case, 10 / Definite, and the classification is **stable**. The system is not merely
+   biased toward hedging.
+
+Then run the evaluation:
+
+```bash
+backend/.venv/bin/python evaluation/evaluate.py
+```
+
+---
+
+## Architecture
+
+```
+backend/
+  main.py                  FastAPI: /api/health, /api/examples, /api/analyze
+  schemas/models.py        Pydantic contracts shared by every stage
+  services/
+    llm_client.py          the only seam to a provider; OpenAI + Mock
+    spans.py               deterministic quote -> character-offset resolution
+    extractor.py           stage 1: structured evidence extraction
+    verifier.py            stage 4: independent claim audit
+    timeline.py            stage 2: chronology, relative ordering preserved
+    hypotheses.py          stage 3: competing causes, qualitative strength
+    naranjo.py             published weight table + pure-Python scorer
+    who_umc.py             WHO-UMC category judgement
+    pipeline.py            stage orchestration
+    cases.py               synthetic demo narratives
+  fixtures/<case>/*.json   recorded per-stage output for mock mode
+  tests/                   39 tests
+  validate_fixtures.py     asserts every fixture quote is verbatim
+
+frontend/
+  app/page.tsx             orchestration + shared highlight state
+  components/
+    CaseInput.tsx          narrative + drug + event, example loader
+    EvidencePanel.tsx      the Evidence Inspector (source highlighting)
+    CausalGraph.tsx        React Flow competing-cause graph
+    HypothesisPanel.tsx    supports / argues-against / not-reported
+    Timeline.tsx           chronology with date-certainty labelling
+    NaranjoTable.tsx       per-item table, score scale, instability banner
+    WhoUmcPanel.tsx        deliberately styled apart from Naranjo
+    ClaimsPanel.tsx        extracted claims incl. rejected ones
+
+evaluation/
+  cases.json               dataset + author-assigned references
+  baselines.py             single-pass verdict, single-pass questionnaire
+  evaluate.py              metrics + comparison table
+```
+
+**Pipeline order is load-bearing:** extraction → verification → timeline → hypotheses →
+Naranjo → WHO-UMC. Verification runs before the user sees any claim, and Naranjo answers are
+span-checked independently inside `answer_items`.
+
+Each stage has its own narrow prompt. There is deliberately no single agent prompt doing
+everything — extraction is told to be comprehensive, the verifier is told only to falsify, and
+giving one prompt both jobs is what produces confident wrongness.
+
+---
+
+## Scientific assumptions and decisions
+
+These are choices a reviewer should be able to disagree with, so they are stated explicitly.
+
+- **Naranjo weights** are transcribed from the worksheet as published in LiverTox
+  ([NCBI Bookshelf NBK548069](https://www.ncbi.nlm.nih.gov/books/NBK548069/)). Range −4 to
+  +13; Definite ≥9, Probable 5–8, Possible 1–4, Doubtful ≤0. Pinned by tests.
+- **Item 6 (placebo) is UNKNOWN, not NO, when no placebo was given.** Published case reports
+  essentially never administer placebo. Scoring it NO adds +1 to virtually every case for
+  something that never happened. This is conservative and it costs the suspected drug a
+  point — deliberately.
+- **Item 5 (alternative causes) requires positive exclusion to answer NO.** Silence is
+  UNKNOWN.
+- **Item 4 distinguishes "explicitly not done" from "not reported."** Both score 0, but the
+  UI shows the citation when the narrative explicitly says no rechallenge occurred.
+- **No inferred dates, including years.** The demo narratives say "3 January" without a year,
+  so no ISO date is emitted at all — only a display label. Emitting `2026-01-03` would
+  fabricate the year, and temporal sequence is the heaviest-weighted Naranjo element.
+- **No numeric causal probabilities.** Qualitative labels only.
+- **Drug-class level only.** Demo cases use letter labels plus therapeutic class ("Drug A, an
+  oral antifungal agent") rather than product names, per the challenge scope rule. No
+  investigational product is analysed as though it had a known adverse-event profile.
+- **False negatives are treated as costlier than false alarms.** Wrongly clearing a drug is
+  the error that harms patients, so the evaluation reports sensitivity for Probable/Definite
+  cases separately from overall agreement.
+
+---
+
+## Evaluation
+
+```bash
+backend/.venv/bin/python evaluation/evaluate.py
+backend/.venv/bin/python evaluation/evaluate.py --case dili-ambiguous-001
+backend/.venv/bin/python evaluation/evaluate.py --json evaluation/results/dev.json
+```
+
+Three systems are compared on identical inputs:
+
+| System | What it does |
+| --- | --- |
+| **Baseline A** | One call: "did this drug cause this event?" → category. No evidence trail. |
+| **Baseline B** | One call: fill the whole Naranjo scale *and* report the total. |
+| **CausalTrace** | extraction → verification → competing causes → deterministic Naranjo |
+
+Baseline B is the honest comparison, because it isolates a single variable: same scale, same
+case, but the model self-reports the total instead of the total being computed from
+independently grounded answers.
+
+Reported metrics: category agreement, Naranjo exact / ±1 / MAE, item-level accuracy,
+**correct-UNKNOWN rate**, **over-commitment rate** (reference-UNKNOWN items the system
+answered anyway — the dangerous direction), sensitivity for Probable/Definite, grounded-item
+rate, and unsupported assertion rate.
+
+### Read this before quoting any number
+
+**The current numbers are not a measurement of accuracy, and the harness says so on every
+run.** The bundled dataset is synthetic with author-assigned references, and in mock mode
+CausalTrace's fixtures and those references share an author — so its agreement is *circular
+and near-perfect by construction*. The baseline fixtures are likewise hand-authored
+illustrations of documented single-pass failure modes, not observed model output.
+
+What the current run genuinely demonstrates: the harness works end to end, the metrics
+compute, the deterministic scorer reproduces its inputs, and the comparison is structured to
+be informative once real data is added. Nothing more.
+
+The one structural result that is *not* an artefact of authorship: on the sparse case both
+CausalTrace and Baseline B arrive at a total of 2, but Baseline B answers NO to seven items
+the narrative never addresses, giving a 0.93 over-commitment rate against 0.00. Identical
+score, completely different epistemics — and only one of them tells you it is guessing.
+
+**To get real numbers:** add cases to `evaluation/cases.json` from the
+[PMC Open Access Subset](https://pmc.ncbi.nlm.nih.gov/tools/openftlist) — filter PubMed to the
+`Case Reports` publication type, restrict to the OA subset, and keep those that state their
+own Naranjo score or WHO-UMC category. Set `reference_source` to `published` with the PMCID.
+Retrieve only via E-utilities, the BioC API, FTP, or the cloud service; **bulk scraping of the
+PMC website is prohibited** and will get you blocked. Expect published cases to be a biased
+sample — journals publish the interesting ones, so Probable and Definite are heavily
+over-represented relative to real-world case volume, and overall accuracy on such a set will
+flatter any system.
+
+---
+
+## Testing
+
+```bash
+cd backend
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/python -m pytest -q        # 39 tests
+.venv/bin/python validate_fixtures.py # 136 fixture quotes must be verbatim
+```
+
+The tests pin the published weights, the −4..+13 range, every band boundary, the invariant
+that the total always lies inside the resolved-score interval, and — most importantly — that
+a claim failing either grounding gate cannot reach the user or the score.
+
+`validate_fixtures.py` exists because the demo's credibility rests on source highlighting
+being real. It caught genuine authoring errors during development.
+
+---
+
+## Limitations
+
+Stated plainly, because a causality tool that oversells itself is worse than none.
+
+- **No real-world accuracy number exists yet.** See the evaluation section. This is the
+  biggest gap.
+- **Single-drug assessment.** Naranjo is applied to one suspected drug at a time. The
+  competing-hypothesis graph surfaces other candidates but does not score each formally.
+- **Naranjo is a poor instrument for hepatotoxicity specifically.** It is not weighted for
+  time-to-onset or recovery criteria, and it relies on drug levels that are rarely
+  informative in idiosyncratic DILI. RUCAM is the better scale there and is not implemented.
+- **No mechanistic reasoning.** No drug-target, pathway, or interaction knowledge is used.
+- **No case-report ingestion.** Narratives are pasted in; PMC retrieval is not wired up.
+- **English only**, and tuned for prose case reports rather than structured safety reports.
+- **The verifier is itself a model** and can err. It reduces unsupported assertions; it does
+  not eliminate them. The span locator is deterministic and is the stronger of the two gates.
+- **Published narratives omit far more than they state.** No pipeline can recover information
+  the report never contained — which is precisely why UNKNOWN is a first-class output.
+
+## Scope and data
+
+Public, appropriately licensed data only. Never patient-identifiable information. Work at the
+drug-class or therapeutic-area level; do not present conclusions about named products. Nothing
+built here is a medical device or a clinical decision tool.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
