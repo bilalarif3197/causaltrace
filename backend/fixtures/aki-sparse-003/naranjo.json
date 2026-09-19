@@ -1,0 +1,64 @@
+{
+  "items": [
+    {
+      "number": 1,
+      "answer": "UNKNOWN",
+      "rationale": "No prior literature or label association is cited in the narrative.",
+      "evidence_text": null
+    },
+    {
+      "number": 2,
+      "answer": "YES",
+      "rationale": "The drug was already being administered when the injury developed, so exposure preceded the event. The precise latency cannot be determined because no start date is given.",
+      "evidence_text": "The patient had been receiving Drug D, an intravenous antibiotic"
+    },
+    {
+      "number": 3,
+      "answer": "UNKNOWN",
+      "rationale": "The narrative does not state whether the drug was withdrawn, and the outcome after admission was never reported. No dechallenge can be assessed.",
+      "evidence_text": "The outcome after the admission was not reported"
+    },
+    {
+      "number": 4,
+      "answer": "UNKNOWN",
+      "rationale": "No rechallenge is described.",
+      "evidence_text": null
+    },
+    {
+      "number": 5,
+      "answer": "YES",
+      "rationale": "Three competing causes are documented: intravenous contrast in the same window, hypotension, and a bloodstream infection. Any one could have produced this injury independently.",
+      "evidence_text": "The patient was also receiving intravenous contrast for imaging during the same period"
+    },
+    {
+      "number": 6,
+      "answer": "UNKNOWN",
+      "rationale": "No placebo was administered.",
+      "evidence_text": null
+    },
+    {
+      "number": 7,
+      "answer": "UNKNOWN",
+      "rationale": "No drug concentrations were reported.",
+      "evidence_text": null
+    },
+    {
+      "number": 8,
+      "answer": "UNKNOWN",
+      "rationale": "No dose is reported and no dose change is described.",
+      "evidence_text": null
+    },
+    {
+      "number": 9,
+      "answer": "UNKNOWN",
+      "rationale": "No prior exposure history is reported.",
+      "evidence_text": null
+    },
+    {
+      "number": 10,
+      "answer": "YES",
+      "rationale": "The event was objectively confirmed by serial serum creatinine measurements.",
+      "evidence_text": "Serum creatinine rose from 1.0 mg/dL to 2.4 mg/dL"
+    }
+  ]
+}

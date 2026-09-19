@@ -1,0 +1,156 @@
+{
+  "claims": [
+    {
+      "slot": "suspected_drug",
+      "claim": "The suspected drug is Drug C, a sulfonamide antimicrobial.",
+      "value": "Drug C (sulfonamide antimicrobial)",
+      "evidence_text": "prescribed Drug C, a sulfonamide antimicrobial",
+      "confidence": 0.97,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "concomitant_drugs",
+      "claim": "The patient was taking no other medications.",
+      "value": "None",
+      "evidence_text": "She was taking no other medications",
+      "confidence": 0.96,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "drug_timing",
+      "claim": "The first dose was taken on 2 March.",
+      "value": "2 March",
+      "evidence_text": "She took the first dose on the morning of 2 March",
+      "confidence": 0.96,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "doses",
+      "claim": "A single dose was taken at the second exposure; the original regimen dose is not stated.",
+      "value": "Single dose on rechallenge",
+      "evidence_text": "The patient took a single dose on 21 April",
+      "confidence": 0.9,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "adverse_event",
+      "claim": "The adverse event is a pruritic maculopapular rash of the trunk and upper arms.",
+      "value": "Pruritic maculopapular rash",
+      "evidence_text": "she developed a pruritic maculopapular rash over her trunk and upper arms",
+      "confidence": 0.96,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "event_onset",
+      "claim": "The rash appeared on 5 March, three days after the first dose.",
+      "value": "5 March (day 3)",
+      "evidence_text": "On 5 March she developed a pruritic maculopapular rash",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "diagnoses_comorbidities",
+      "claim": "The patient has no significant medical history.",
+      "value": "None significant",
+      "evidence_text": "no significant medical history",
+      "confidence": 0.94,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "infections",
+      "claim": "The indication was an uncomplicated urinary tract infection.",
+      "value": "Uncomplicated UTI",
+      "evidence_text": "for an uncomplicated urinary tract infection",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "labs",
+      "claim": "No laboratory values are reported.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "diagnostic_tests",
+      "claim": "The rash was photographed in the clinical record.",
+      "value": "Clinical photography",
+      "evidence_text": "photographed in the clinical record",
+      "confidence": 0.93,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "treatment_withdrawal",
+      "claim": "Drug C was stopped on 5 March, the day the rash appeared.",
+      "value": "5 March",
+      "evidence_text": "Drug C was stopped on 5 March",
+      "confidence": 0.96,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "dechallenge_outcome",
+      "claim": "The rash resolved completely after withdrawal.",
+      "value": "Resolved by 9 March",
+      "evidence_text": "The rash faded over four days and had fully resolved by 9 March",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "rechallenge",
+      "claim": "An inadvertent rechallenge six weeks later reproduced the rash within twelve hours.",
+      "value": "Positive rechallenge",
+      "evidence_text": "the maculopapular rash recurred within twelve hours, again affecting the trunk and upper arms",
+      "confidence": 0.96,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "previous_exposure",
+      "claim": "The patient reported a rash to a sulfonamide-containing antibiotic in adolescence.",
+      "value": "Prior reaction to same class (unverified)",
+      "evidence_text": "she had developed a rash after a sulfonamide-containing antibiotic as a teenager",
+      "confidence": 0.85,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "dose_response",
+      "claim": "No dose escalation or reduction is described.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "drug_levels",
+      "claim": "No drug concentrations were reported.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "alternative_causes",
+      "claim": "No competing cause is apparent: no other drugs and no significant comorbidity.",
+      "value": "None identified",
+      "evidence_text": "She was taking no other medications",
+      "confidence": 0.88,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "objective_evidence",
+      "claim": "The rash was observed by a clinician and photographically documented.",
+      "value": "Clinician examination plus photography",
+      "evidence_text": "documented on examination by her general practitioner and photographed in the clinical record",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "prior_knowledge",
+      "claim": "The narrative cites established literature for cutaneous reactions to this drug class.",
+      "value": "Well described in the literature",
+      "evidence_text": "Cutaneous reactions to this drug class are well described in the published literature",
+      "confidence": 0.94,
+      "status": "SUPPORTED"
+    }
+  ]
+}

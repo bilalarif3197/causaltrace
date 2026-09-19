@@ -1,0 +1,80 @@
+{
+  "insufficient_to_distinguish": false,
+  "distinguishing_note": "A positive dechallenge followed by a positive rechallenge in the same distribution, with no concomitant drugs and no significant comorbidity, leaves no competing explanation with meaningful support.",
+  "hypotheses": [
+    {
+      "hypothesis": "Drug C caused the maculopapular rash",
+      "kind": "SUSPECT_DRUG",
+      "support_label": "Strong support",
+      "label_rationale": "Exposure preceded the rash, withdrawal resolved it, and an inadvertent re-exposure reproduced it within twelve hours in the same distribution. No concomitant drugs and no significant comorbidity were present to explain it otherwise.",
+      "supporting_evidence": [
+        {
+          "statement": "Exposure preceded the rash by three days, a typical latency for a cutaneous drug reaction.",
+          "evidence_text": "She took the first dose on the morning of 2 March"
+        },
+        {
+          "statement": "Positive dechallenge: the rash fully resolved after the drug was stopped.",
+          "evidence_text": "The rash faded over four days and had fully resolved by 9 March"
+        },
+        {
+          "statement": "Positive rechallenge: re-exposure reproduced the rash within twelve hours in the same distribution.",
+          "evidence_text": "the maculopapular rash recurred within twelve hours, again affecting the trunk and upper arms"
+        },
+        {
+          "statement": "No concomitant medications were present to provide an alternative culprit.",
+          "evidence_text": "She was taking no other medications"
+        },
+        {
+          "statement": "The reaction is an established effect of this drug class.",
+          "evidence_text": "Cutaneous reactions to this drug class are well described in the published literature"
+        }
+      ],
+      "contradicting_evidence": [],
+      "unknown_evidence": [
+        { "statement": "No drug concentrations were measured, though these are not informative for a cutaneous hypersensitivity reaction.", "evidence_text": null },
+        { "statement": "The prior adolescent reaction is patient-reported and could not be verified against records.", "evidence_text": null }
+      ]
+    },
+    {
+      "hypothesis": "The urinary tract infection or an intercurrent viral illness caused the rash",
+      "kind": "UNDERLYING_DISEASE",
+      "support_label": "Insufficient evidence",
+      "label_rationale": "An infection was present at the first episode, but this cannot explain a rash that recurred within twelve hours of re-exposure six weeks later.",
+      "supporting_evidence": [
+        {
+          "statement": "An infection was present at the time of the first rash.",
+          "evidence_text": "for an uncomplicated urinary tract infection"
+        }
+      ],
+      "contradicting_evidence": [
+        {
+          "statement": "The rash recurred within twelve hours of re-exposure weeks later, a sequence an intercurrent infection cannot account for.",
+          "evidence_text": "the maculopapular rash recurred within twelve hours, again affecting the trunk and upper arms"
+        },
+        {
+          "statement": "The rash resolved on withdrawal rather than tracking the course of the infection.",
+          "evidence_text": "The rash faded over four days and had fully resolved by 9 March"
+        }
+      ],
+      "unknown_evidence": [
+        { "statement": "No viral serology or infection markers are reported for either episode.", "evidence_text": null }
+      ]
+    },
+    {
+      "hypothesis": "A concomitant medication caused the rash",
+      "kind": "CONCOMITANT_DRUG",
+      "support_label": "Insufficient evidence",
+      "label_rationale": "The narrative explicitly rules this out; there were no other medications.",
+      "supporting_evidence": [],
+      "contradicting_evidence": [
+        {
+          "statement": "No other medications were being taken.",
+          "evidence_text": "She was taking no other medications"
+        }
+      ],
+      "unknown_evidence": [
+        { "statement": "Over-the-counter and herbal product use is not addressed in the narrative.", "evidence_text": null }
+      ]
+    }
+  ]
+}

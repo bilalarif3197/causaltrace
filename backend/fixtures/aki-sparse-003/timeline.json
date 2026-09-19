@@ -1,0 +1,81 @@
+{
+  "events": [
+    {
+      "label": "Hospital admission with documented bloodstream infection",
+      "category": "INFECTION",
+      "order": 1,
+      "date": null,
+      "display_date": "Admission",
+      "relative_text": "at admission",
+      "date_certainty": "RELATIVE",
+      "actor": null,
+      "evidence_text": "a documented bloodstream infection"
+    },
+    {
+      "label": "Drug D being administered (start date not stated)",
+      "category": "DRUG_START",
+      "order": 2,
+      "date": null,
+      "display_date": null,
+      "relative_text": "already ongoing before the injury",
+      "date_certainty": "UNKNOWN",
+      "actor": "Drug D",
+      "evidence_text": "The patient had been receiving Drug D, an intravenous antibiotic"
+    },
+    {
+      "label": "Intravenous contrast administered for imaging",
+      "category": "OTHER",
+      "order": 3,
+      "date": null,
+      "display_date": null,
+      "relative_text": "during the same period",
+      "date_certainty": "RELATIVE",
+      "actor": "IV contrast",
+      "evidence_text": "The patient was also receiving intravenous contrast for imaging during the same period"
+    },
+    {
+      "label": "Hypotension",
+      "category": "OTHER",
+      "order": 4,
+      "date": null,
+      "display_date": "Day 2",
+      "relative_text": "on the second day of admission",
+      "date_certainty": "RELATIVE",
+      "actor": null,
+      "evidence_text": "was hypotensive on the second day of admission"
+    },
+    {
+      "label": "Serum creatinine rose 1.0 to 2.4 mg/dL",
+      "category": "LAB",
+      "order": 5,
+      "date": null,
+      "display_date": null,
+      "relative_text": "over three days",
+      "date_certainty": "RELATIVE",
+      "actor": null,
+      "evidence_text": "Serum creatinine rose from 1.0 mg/dL to 2.4 mg/dL over three days"
+    },
+    {
+      "label": "Acute kidney injury diagnosed",
+      "category": "EVENT_ONSET",
+      "order": 6,
+      "date": null,
+      "display_date": null,
+      "relative_text": "during hospital admission",
+      "date_certainty": "RELATIVE",
+      "actor": null,
+      "evidence_text": "developed acute kidney injury during hospital admission"
+    },
+    {
+      "label": "Outcome not reported",
+      "category": "OTHER",
+      "order": 7,
+      "date": null,
+      "display_date": null,
+      "relative_text": "after the admission",
+      "date_certainty": "UNKNOWN",
+      "actor": null,
+      "evidence_text": "The outcome after the admission was not reported"
+    }
+  ]
+}

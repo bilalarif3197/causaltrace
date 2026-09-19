@@ -1,0 +1,50 @@
+{
+  "classification": "Certain",
+  "reasoning": "This case satisfies the WHO-UMC criteria for 'Certain'. The event followed a plausible temporal sequence after exposure, it resolved on withdrawal, it is a pharmacologically recognised effect of the drug class, and a rechallenge reproduced it within twelve hours in the same anatomical distribution. Crucially, the alternatives are positively excluded rather than merely unmentioned: the patient was taking no other medications and had no significant comorbidity. 'Certain' requires a satisfactory rechallenge, and an inadvertent one occurred here.",
+  "major_uncertainty": "The rechallenge was inadvertent rather than controlled, and the reported adolescent reaction could not be verified against records. Neither materially weakens the assessment, since the documented dechallenge-rechallenge sequence stands on its own.",
+  "criteria": [
+    {
+      "criterion": "Plausible temporal relationship to drug intake",
+      "met": "YES",
+      "note": "Three days from first dose to rash; twelve hours from re-exposure to recurrence."
+    },
+    {
+      "criterion": "Cannot be explained by disease or other drugs",
+      "met": "YES",
+      "note": "No concomitant medications and no significant medical history; the twelve-hour recurrence on re-exposure excludes an intercurrent illness."
+    },
+    {
+      "criterion": "Response to withdrawal plausible (dechallenge)",
+      "met": "YES",
+      "note": "Full resolution over four days after withdrawal, and again within three days after the second exposure."
+    },
+    {
+      "criterion": "Event definitive pharmacologically or phenomenologically",
+      "met": "YES",
+      "note": "A recognised cutaneous reaction pattern for this drug class, cited in the narrative."
+    },
+    {
+      "criterion": "Rechallenge satisfactory, if performed",
+      "met": "YES",
+      "note": "Inadvertent rechallenge reproduced the reaction in the same distribution."
+    }
+  ],
+  "supporting_evidence": [
+    {
+      "statement": "Positive dechallenge.",
+      "evidence_text": "The rash faded over four days and had fully resolved by 9 March"
+    },
+    {
+      "statement": "Positive rechallenge in the same distribution.",
+      "evidence_text": "the maculopapular rash recurred within twelve hours, again affecting the trunk and upper arms"
+    },
+    {
+      "statement": "Alternatives positively excluded rather than unmentioned.",
+      "evidence_text": "She was taking no other medications"
+    },
+    {
+      "statement": "Recognised class effect.",
+      "evidence_text": "Cutaneous reactions to this drug class are well described in the published literature"
+    }
+  ]
+}

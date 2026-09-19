@@ -1,0 +1,50 @@
+{
+  "classification": "Possible",
+  "reasoning": "The temporal relationship between Drug A and the liver injury is plausible, and dechallenge was positive against a documented normal baseline. However, WHO-UMC reserves 'Probable' for cases where disease and other drugs provide an unlikely explanation, and here a radiographically documented pneumonia and a concomitant macrolide both remain live alternatives. Viral hepatitis was never tested for. A documented, unexcluded competing cause caps this assessment at 'Possible'.",
+  "major_uncertainty": "Viral hepatitis serology was never obtained and no drug concentrations were measured, so neither a common infectious cause nor the relative contribution of the two drugs could be assessed. A single serology at presentation would likely have moved this assessment in one direction or the other.",
+  "criteria": [
+    {
+      "criterion": "Plausible temporal relationship to drug intake",
+      "met": "YES",
+      "note": "Drug A started 3 January; injury presented 18 January, a 15-day latency."
+    },
+    {
+      "criterion": "Cannot be explained by disease or other drugs",
+      "met": "NO",
+      "note": "A documented pneumonia and a concomitant macrolide both provide plausible alternative explanations, and neither was excluded."
+    },
+    {
+      "criterion": "Response to withdrawal plausible (dechallenge)",
+      "met": "YES",
+      "note": "Enzymes normalised after withdrawal, and notably while the other candidate drug continued."
+    },
+    {
+      "criterion": "Event definitive pharmacologically or phenomenologically",
+      "met": "UNKNOWN",
+      "note": "Hepatocellular injury is objectively documented, but the narrative cites no established association for this agent."
+    },
+    {
+      "criterion": "Rechallenge satisfactory, if performed",
+      "met": "UNKNOWN",
+      "note": "No rechallenge was performed; the patient was not re-exposed."
+    }
+  ],
+  "supporting_evidence": [
+    {
+      "statement": "Documented normal baseline liver function before exposure.",
+      "evidence_text": "His baseline liver function tests were normal, with ALT 28 U/L and AST 24 U/L"
+    },
+    {
+      "statement": "Positive dechallenge after withdrawal of Drug A.",
+      "evidence_text": "Liver enzymes declined gradually and had normalised by 10 February, with ALT 31 U/L"
+    },
+    {
+      "statement": "An unexcluded competing infectious explanation.",
+      "evidence_text": "a chest radiograph showed a right lower lobe infiltrate consistent with community-acquired pneumonia"
+    },
+    {
+      "statement": "A common alternative cause was never tested for.",
+      "evidence_text": "Hepatitis A, B and C serologies were not obtained"
+    }
+  ]
+}

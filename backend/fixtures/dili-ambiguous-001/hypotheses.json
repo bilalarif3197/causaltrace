@@ -1,0 +1,139 @@
+{
+  "insufficient_to_distinguish": true,
+  "distinguishing_note": "Viral hepatitis serology at presentation would have removed one competing explanation, and a rechallenge or serum drug concentrations would have separated Drug A from Drug B. None were obtained, so the case cannot be resolved beyond 'possible' for Drug A.",
+  "hypotheses": [
+    {
+      "hypothesis": "Drug A caused the acute liver injury",
+      "kind": "SUSPECT_DRUG",
+      "support_label": "Moderate support",
+      "label_rationale": "Exposure clearly preceded the injury and dechallenge was positive, but a documented infection and a second hepatotoxic-class drug remain unexcluded, and the decisive tests were never performed.",
+      "supporting_evidence": [
+        {
+          "statement": "Drug A exposure preceded the liver injury by 15 days, a plausible latency.",
+          "evidence_text": "was started on Drug A, an oral antifungal agent, on 3 January for onychomycosis"
+        },
+        {
+          "statement": "Liver function was documented normal before Drug A was started, so the injury is incident rather than pre-existing.",
+          "evidence_text": "His baseline liver function tests were normal, with ALT 28 U/L and AST 24 U/L"
+        },
+        {
+          "statement": "Dechallenge was positive: enzymes normalised after Drug A was withdrawn.",
+          "evidence_text": "Liver enzymes declined gradually and had normalised by 10 February, with ALT 31 U/L"
+        },
+        {
+          "statement": "Recovery occurred while Drug B continued, which is more consistent with Drug A than Drug B being responsible.",
+          "evidence_text": "Drug B was continued to complete a ten-day course"
+        }
+      ],
+      "contradicting_evidence": [
+        {
+          "statement": "A documented pneumonia provides an alternative explanation that was never excluded.",
+          "evidence_text": "a chest radiograph showed a right lower lobe infiltrate consistent with community-acquired pneumonia"
+        },
+        {
+          "statement": "A second drug from a class associated with hepatotoxicity was introduced during the exposure window.",
+          "evidence_text": "On 8 January he was prescribed Drug B, a macrolide antibiotic"
+        }
+      ],
+      "unknown_evidence": [
+        { "statement": "No rechallenge was performed, so the strongest available confirmation is absent.", "evidence_text": null },
+        { "statement": "No serum drug concentrations were measured.", "evidence_text": null },
+        { "statement": "Viral hepatitis serology was never obtained, leaving a common cause untested.", "evidence_text": null },
+        { "statement": "The narrative cites no prior literature associating Drug A with liver injury.", "evidence_text": null }
+      ]
+    },
+    {
+      "hypothesis": "Drug B caused the acute liver injury",
+      "kind": "CONCOMITANT_DRUG",
+      "support_label": "Limited support",
+      "label_rationale": "The temporal relationship fits, but the patient recovered while still taking Drug B, which argues against it.",
+      "supporting_evidence": [
+        {
+          "statement": "Drug B was started 10 days before the injury presented, a compatible latency.",
+          "evidence_text": "On 8 January he was prescribed Drug B, a macrolide antibiotic"
+        }
+      ],
+      "contradicting_evidence": [
+        {
+          "statement": "Drug B was continued through the recovery period, yet liver enzymes normalised anyway.",
+          "evidence_text": "Drug B was continued to complete a ten-day course"
+        },
+        {
+          "statement": "Enzymes normalised without Drug B being withdrawn, so there is no positive dechallenge for this hypothesis.",
+          "evidence_text": "Liver enzymes declined gradually and had normalised by 10 February, with ALT 31 U/L"
+        }
+      ],
+      "unknown_evidence": [
+        { "statement": "No prior association between Drug B and hepatic injury is cited in the narrative.", "evidence_text": null },
+        { "statement": "No serum drug concentrations were measured for Drug B.", "evidence_text": null },
+        { "statement": "The exact completion date of the ten-day course is not given, so the overlap with recovery cannot be timed precisely.", "evidence_text": null }
+      ]
+    },
+    {
+      "hypothesis": "The community-acquired pneumonia caused the liver injury",
+      "kind": "INFECTION",
+      "support_label": "Limited support",
+      "label_rationale": "A documented infection overlapped the injury window and improved on the same timescale as the liver enzymes, so it cannot be dismissed. No evidence in the narrative argues against it either way.",
+      "supporting_evidence": [
+        {
+          "statement": "An infection was radiographically documented during the exposure window.",
+          "evidence_text": "a chest radiograph showed a right lower lobe infiltrate consistent with community-acquired pneumonia"
+        },
+        {
+          "statement": "The infection resolved on a similar timescale to the liver enzymes, so the improvement does not discriminate between the two.",
+          "evidence_text": "The patient's fever resolved and the pneumonia improved over the following week"
+        }
+      ],
+      "contradicting_evidence": [],
+      "unknown_evidence": [
+        { "statement": "No blood cultures or infection severity markers are reported.", "evidence_text": null },
+        { "statement": "The narrative does not report whether hepatic involvement was attributed to the infection at the time.", "evidence_text": null },
+        { "statement": "No hepatitis serology was obtained to exclude a concurrent viral cause.", "evidence_text": null }
+      ]
+    },
+    {
+      "hypothesis": "An interaction between Drug A and Drug B caused the liver injury",
+      "kind": "INTERACTION",
+      "support_label": "Insufficient evidence",
+      "label_rationale": "The two exposures overlapped, which is a precondition for an interaction, but the narrative contains nothing that speaks to one either way.",
+      "supporting_evidence": [
+        {
+          "statement": "The two drugs overlapped for the ten days preceding the injury.",
+          "evidence_text": "On 8 January he was prescribed Drug B, a macrolide antibiotic"
+        }
+      ],
+      "contradicting_evidence": [],
+      "unknown_evidence": [
+        { "statement": "No drug concentrations were measured, so altered metabolism cannot be assessed.", "evidence_text": null },
+        { "statement": "The narrative does not discuss a pharmacokinetic interaction.", "evidence_text": null }
+      ]
+    },
+    {
+      "hypothesis": "The available evidence is insufficient to identify a single cause",
+      "kind": "INSUFFICIENT_EVIDENCE",
+      "support_label": "Strong support",
+      "label_rationale": "Three explanations remain live and the three tests that would have separated them -- hepatitis serology, drug concentrations, rechallenge -- were all absent.",
+      "supporting_evidence": [
+        {
+          "statement": "A common alternative cause was never tested for.",
+          "evidence_text": "Hepatitis A, B and C serologies were not obtained"
+        },
+        {
+          "statement": "No drug concentrations were available to attribute injury between the two agents.",
+          "evidence_text": "No serum drug concentrations were measured"
+        },
+        {
+          "statement": "No rechallenge was performed.",
+          "evidence_text": "The patient was not re-exposed to Drug A"
+        }
+      ],
+      "contradicting_evidence": [
+        {
+          "statement": "A positive dechallenge while the other drug continued does meaningfully favour Drug A over Drug B.",
+          "evidence_text": "Liver enzymes declined gradually and had normalised by 10 February, with ALT 31 U/L"
+        }
+      ],
+      "unknown_evidence": []
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "verdicts": [
+    { "id": "c000", "verdict": "SUPPORTED", "reason": "The quote names Drug D and identifies it as an intravenous antibiotic." },
+    { "id": "c002", "verdict": "SUPPORTED", "reason": "The past-perfect phrasing supports ongoing administration; the claim correctly notes no start date is given." },
+    { "id": "c004", "verdict": "SUPPORTED", "reason": "The quote states the adverse event directly." },
+    { "id": "c005", "verdict": "SUPPORTED", "reason": "The quote gives the three-day rise and the claim correctly flags that the interval from drug start is unknown." },
+    { "id": "c007", "verdict": "SUPPORTED", "reason": "The quote documents a bloodstream infection." },
+    { "id": "c008", "verdict": "SUPPORTED", "reason": "The quote gives both creatinine values." },
+    {
+      "id": "c011",
+      "verdict": "NOT_SUPPORTED",
+      "reason": "The quote states the outcome was NOT reported, so it cannot support a claim that renal function recovered. The claim asserts the opposite of what the evidence says."
+    },
+    { "id": "c016", "verdict": "SUPPORTED", "reason": "The quote documents concurrent intravenous contrast administration." },
+    { "id": "c017", "verdict": "SUPPORTED", "reason": "The quote documents hypotension on day two." },
+    { "id": "c018", "verdict": "SUPPORTED", "reason": "The quote documents a bloodstream infection, which is a recognised cause of renal injury." },
+    { "id": "c019", "verdict": "SUPPORTED", "reason": "Serial creatinine values constitute objective confirmation." }
+  ]
+}

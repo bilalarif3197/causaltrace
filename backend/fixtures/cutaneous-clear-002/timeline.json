@@ -1,0 +1,81 @@
+{
+  "events": [
+    {
+      "label": "Drug C started (sulfonamide antimicrobial) for UTI",
+      "category": "DRUG_START",
+      "order": 1,
+      "date": null,
+      "display_date": "Mar 02",
+      "relative_text": null,
+      "date_certainty": "EXACT",
+      "actor": "Drug C",
+      "evidence_text": "She took the first dose on the morning of 2 March"
+    },
+    {
+      "label": "Pruritic maculopapular rash on trunk and upper arms",
+      "category": "EVENT_ONSET",
+      "order": 2,
+      "date": null,
+      "display_date": "Mar 05",
+      "relative_text": "three days after the first dose",
+      "date_certainty": "EXACT",
+      "actor": null,
+      "evidence_text": "On 5 March she developed a pruritic maculopapular rash over her trunk and upper arms"
+    },
+    {
+      "label": "Drug C stopped",
+      "category": "DRUG_STOP",
+      "order": 3,
+      "date": null,
+      "display_date": "Mar 05",
+      "relative_text": null,
+      "date_certainty": "EXACT",
+      "actor": "Drug C",
+      "evidence_text": "Drug C was stopped on 5 March"
+    },
+    {
+      "label": "Rash fully resolved (positive dechallenge)",
+      "category": "RECOVERY",
+      "order": 4,
+      "date": null,
+      "display_date": "Mar 09",
+      "relative_text": "over four days",
+      "date_certainty": "EXACT",
+      "actor": null,
+      "evidence_text": "The rash faded over four days and had fully resolved by 9 March"
+    },
+    {
+      "label": "Inadvertent re-exposure: single dose of the same agent",
+      "category": "RECHALLENGE",
+      "order": 5,
+      "date": null,
+      "display_date": "Apr 21",
+      "relative_text": "six weeks later",
+      "date_certainty": "EXACT",
+      "actor": "Drug C",
+      "evidence_text": "The patient took a single dose on 21 April"
+    },
+    {
+      "label": "Rash recurred within 12 hours, same distribution (positive rechallenge)",
+      "category": "EVENT_ONSET",
+      "order": 6,
+      "date": null,
+      "display_date": "Apr 21",
+      "relative_text": "within twelve hours",
+      "date_certainty": "RELATIVE",
+      "actor": null,
+      "evidence_text": "the maculopapular rash recurred within twelve hours, again affecting the trunk and upper arms"
+    },
+    {
+      "label": "Drug stopped immediately; rash resolved within three days",
+      "category": "RECOVERY",
+      "order": 7,
+      "date": null,
+      "display_date": null,
+      "relative_text": "within three days",
+      "date_certainty": "RELATIVE",
+      "actor": "Drug C",
+      "evidence_text": "The drug was stopped immediately and the rash resolved within three days"
+    }
+  ]
+}

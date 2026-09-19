@@ -1,0 +1,64 @@
+{
+  "items": [
+    {
+      "number": 1,
+      "answer": "YES",
+      "rationale": "The narrative itself cites established literature describing cutaneous reactions to this drug class.",
+      "evidence_text": "Cutaneous reactions to this drug class are well described in the published literature"
+    },
+    {
+      "number": 2,
+      "answer": "YES",
+      "rationale": "The first dose was taken on 2 March and the rash appeared on 5 March.",
+      "evidence_text": "She took the first dose on the morning of 2 March"
+    },
+    {
+      "number": 3,
+      "answer": "YES",
+      "rationale": "The rash fully resolved after the drug was withdrawn.",
+      "evidence_text": "The rash faded over four days and had fully resolved by 9 March"
+    },
+    {
+      "number": 4,
+      "answer": "YES",
+      "rationale": "An inadvertent rechallenge reproduced the rash within twelve hours in the same distribution. This is the strongest single piece of evidence in the case.",
+      "evidence_text": "the maculopapular rash recurred within twelve hours, again affecting the trunk and upper arms"
+    },
+    {
+      "number": 5,
+      "answer": "NO",
+      "rationale": "The narrative positively excludes the main alternatives: no other medications and no significant medical history. This is documented absence rather than mere silence.",
+      "evidence_text": "She was taking no other medications"
+    },
+    {
+      "number": 6,
+      "answer": "UNKNOWN",
+      "rationale": "No placebo was administered, as is normal outside a controlled trial.",
+      "evidence_text": null
+    },
+    {
+      "number": 7,
+      "answer": "UNKNOWN",
+      "rationale": "No drug concentrations were measured. For a cutaneous hypersensitivity reaction these would not be expected to be informative.",
+      "evidence_text": null
+    },
+    {
+      "number": 8,
+      "answer": "UNKNOWN",
+      "rationale": "No dose escalation or reduction is described, so no dose-response relationship can be assessed.",
+      "evidence_text": null
+    },
+    {
+      "number": 9,
+      "answer": "YES",
+      "rationale": "The patient reported a rash to a sulfonamide-containing antibiotic as a teenager, a structurally related agent.",
+      "evidence_text": "she had developed a rash after a sulfonamide-containing antibiotic as a teenager"
+    },
+    {
+      "number": 10,
+      "answer": "YES",
+      "rationale": "The rash was observed by a clinician on examination and photographed in the clinical record.",
+      "evidence_text": "documented on examination by her general practitioner and photographed in the clinical record"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "insufficient_to_distinguish": true,
+  "distinguishing_note": "Three causes overlap in the same window and the narrative contains nothing that separates them: no baseline renal function, no urinalysis, no timing of contrast relative to the creatinine rise, and no dechallenge because the outcome was never reported. This case should not be assigned a single cause.",
+  "hypotheses": [
+    {
+      "hypothesis": "Drug D caused the acute kidney injury",
+      "kind": "SUSPECT_DRUG",
+      "support_label": "Limited support",
+      "label_rationale": "Exposure preceded the injury, but that is nearly all the narrative provides. There is no dechallenge, no baseline renal function, and two other exposures overlap the same window.",
+      "supporting_evidence": [
+        {
+          "statement": "The drug was being administered before the injury developed.",
+          "evidence_text": "The patient had been receiving Drug D, an intravenous antibiotic"
+        }
+      ],
+      "contradicting_evidence": [
+        {
+          "statement": "Two other plausible nephrotoxic exposures overlap the same period.",
+          "evidence_text": "The patient was also receiving intravenous contrast for imaging during the same period"
+        }
+      ],
+      "unknown_evidence": [
+        { "statement": "No start date for the drug, so the latency to injury cannot be computed.", "evidence_text": null },
+        { "statement": "Not stated whether the drug was withdrawn, so there is no dechallenge to assess.", "evidence_text": null },
+        { "statement": "The outcome after admission was never reported.", "evidence_text": null },
+        { "statement": "No drug concentrations, no dose, and no baseline renal function.", "evidence_text": null }
+      ]
+    },
+    {
+      "hypothesis": "Iodinated contrast caused the acute kidney injury",
+      "kind": "CONCOMITANT_DRUG",
+      "support_label": "Limited support",
+      "label_rationale": "Contrast exposure is documented in the same window and is a recognised cause, but the narrative gives no timing relative to the creatinine rise.",
+      "supporting_evidence": [
+        {
+          "statement": "Intravenous contrast was administered during the same period as the injury.",
+          "evidence_text": "The patient was also receiving intravenous contrast for imaging during the same period"
+        }
+      ],
+      "contradicting_evidence": [],
+      "unknown_evidence": [
+        { "statement": "The contrast timing relative to the creatinine rise is not given, so the characteristic latency cannot be checked.", "evidence_text": null },
+        { "statement": "Contrast volume and type are not reported.", "evidence_text": null }
+      ]
+    },
+    {
+      "hypothesis": "Sepsis with hypotension caused the acute kidney injury",
+      "kind": "UNDERLYING_DISEASE",
+      "support_label": "Limited support",
+      "label_rationale": "A documented bloodstream infection plus recorded hypotension is a well-recognised mechanism, and both are explicitly in the narrative.",
+      "supporting_evidence": [
+        {
+          "statement": "A bloodstream infection was documented.",
+          "evidence_text": "a documented bloodstream infection"
+        },
+        {
+          "statement": "The patient was hypotensive during the admission, immediately before the recorded creatinine rise.",
+          "evidence_text": "was hypotensive on the second day of admission"
+        }
+      ],
+      "contradicting_evidence": [],
+      "unknown_evidence": [
+        { "statement": "Blood pressure values, duration of hypotension and vasopressor use are not reported.", "evidence_text": null },
+        { "statement": "No urinalysis or urine output data to characterise the injury pattern.", "evidence_text": null }
+      ]
+    },
+    {
+      "hypothesis": "The available evidence is insufficient to identify a cause",
+      "kind": "INSUFFICIENT_EVIDENCE",
+      "support_label": "Strong support",
+      "label_rationale": "Three recognised causes overlap the same window, none can be excluded, and the single most informative element -- what happened after the drug was stopped -- was never reported.",
+      "supporting_evidence": [
+        {
+          "statement": "The outcome, and therefore any dechallenge, was never reported.",
+          "evidence_text": "The outcome after the admission was not reported"
+        },
+        {
+          "statement": "A second nephrotoxic exposure overlapped the same window.",
+          "evidence_text": "The patient was also receiving intravenous contrast for imaging during the same period"
+        },
+        {
+          "statement": "A third mechanism, septic hypotension, is also documented.",
+          "evidence_text": "was hypotensive on the second day of admission"
+        }
+      ],
+      "contradicting_evidence": [],
+      "unknown_evidence": []
+    }
+  ]
+}

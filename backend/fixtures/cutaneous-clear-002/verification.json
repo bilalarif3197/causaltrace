@@ -1,0 +1,20 @@
+{
+  "verdicts": [
+    { "id": "c000", "verdict": "SUPPORTED", "reason": "The quote names Drug C and its class." },
+    { "id": "c001", "verdict": "SUPPORTED", "reason": "The quote states no other medications were being taken." },
+    { "id": "c002", "verdict": "SUPPORTED", "reason": "The quote gives the 2 March first dose." },
+    { "id": "c003", "verdict": "SUPPORTED", "reason": "The quote documents a single dose on 21 April; the claim correctly notes the original dose is not stated." },
+    { "id": "c004", "verdict": "SUPPORTED", "reason": "The quote describes the rash, its character and its distribution." },
+    { "id": "c005", "verdict": "SUPPORTED", "reason": "The quote gives the 5 March onset; the three-day interval follows from the stated first dose." },
+    { "id": "c006", "verdict": "SUPPORTED", "reason": "The quote states there is no significant medical history." },
+    { "id": "c007", "verdict": "SUPPORTED", "reason": "The quote states the indication." },
+    { "id": "c009", "verdict": "SUPPORTED", "reason": "The quote confirms photographic documentation." },
+    { "id": "c010", "verdict": "SUPPORTED", "reason": "The quote gives the stop date, which matches the onset date stated elsewhere." },
+    { "id": "c011", "verdict": "SUPPORTED", "reason": "The quote documents complete resolution after withdrawal." },
+    { "id": "c012", "verdict": "SUPPORTED", "reason": "The quote documents recurrence within twelve hours on re-exposure, in the same distribution." },
+    { "id": "c013", "verdict": "SUPPORTED", "reason": "The quote reports the prior reaction; the claim appropriately marks it patient-reported and unverified." },
+    { "id": "c016", "verdict": "SUPPORTED", "reason": "The quote supports absence of concomitant drugs, which is the substance of the claim." },
+    { "id": "c017", "verdict": "SUPPORTED", "reason": "The quote documents both clinician examination and photography." },
+    { "id": "c018", "verdict": "SUPPORTED", "reason": "The quote explicitly cites the published literature for this drug class." }
+  ]
+}

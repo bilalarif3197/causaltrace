@@ -1,0 +1,172 @@
+{
+  "claims": [
+    {
+      "slot": "suspected_drug",
+      "claim": "The suspected drug is Drug D, an intravenous antibiotic.",
+      "value": "Drug D (intravenous antibiotic)",
+      "evidence_text": "receiving Drug D, an intravenous antibiotic",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "concomitant_drugs",
+      "claim": "No other medications are named in the narrative.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "drug_timing",
+      "claim": "Drug D was already being given before the injury, but no start date is stated.",
+      "value": "Ongoing; start date not stated",
+      "evidence_text": "The patient had been receiving Drug D, an intravenous antibiotic",
+      "confidence": 0.8,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "doses",
+      "claim": "No dose or frequency is reported.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "adverse_event",
+      "claim": "The adverse event is acute kidney injury.",
+      "value": "Acute kidney injury",
+      "evidence_text": "developed acute kidney injury during hospital admission",
+      "confidence": 0.94,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "event_onset",
+      "claim": "Creatinine rose over three days, but the interval from drug initiation is not stated.",
+      "value": "Over three days; interval from drug start unknown",
+      "evidence_text": "Serum creatinine rose from 1.0 mg/dL to 2.4 mg/dL over three days",
+      "confidence": 0.85,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "diagnoses_comorbidities",
+      "claim": "No baseline comorbidities or baseline renal function are reported.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "infections",
+      "claim": "A bloodstream infection was documented.",
+      "value": "Bloodstream infection",
+      "evidence_text": "a documented bloodstream infection",
+      "confidence": 0.93,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "labs",
+      "claim": "Serum creatinine more than doubled over three days.",
+      "value": "1.0 to 2.4 mg/dL",
+      "evidence_text": "Serum creatinine rose from 1.0 mg/dL to 2.4 mg/dL over three days",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "diagnostic_tests",
+      "claim": "No urinalysis, renal imaging or other workup is reported.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "treatment_withdrawal",
+      "claim": "The narrative does not state whether Drug D was withdrawn.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "dechallenge_outcome",
+      "claim": "Renal function recovered after the admission.",
+      "value": "Recovered",
+      "evidence_text": "The outcome after the admission was not reported",
+      "confidence": 0.44,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "rechallenge",
+      "claim": "No rechallenge is described.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "previous_exposure",
+      "claim": "No prior exposure history is reported.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "dose_response",
+      "claim": "No dose change is described.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "drug_levels",
+      "claim": "No drug concentrations were reported.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "alternative_causes",
+      "claim": "Intravenous contrast was administered during the same period.",
+      "value": "Iodinated contrast exposure",
+      "evidence_text": "The patient was also receiving intravenous contrast for imaging during the same period",
+      "confidence": 0.93,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "alternative_causes",
+      "claim": "The patient was hypotensive during the admission.",
+      "value": "Hypotension on day 2",
+      "evidence_text": "was hypotensive on the second day of admission",
+      "confidence": 0.93,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "alternative_causes",
+      "claim": "A bloodstream infection provides a septic explanation for renal injury.",
+      "value": "Sepsis",
+      "evidence_text": "a documented bloodstream infection",
+      "confidence": 0.9,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "objective_evidence",
+      "claim": "The event was confirmed by serial serum creatinine measurements.",
+      "value": "Serial creatinine",
+      "evidence_text": "Serum creatinine rose from 1.0 mg/dL to 2.4 mg/dL",
+      "confidence": 0.94,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "prior_knowledge",
+      "claim": "No prior literature or label association is cited in the narrative.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    }
+  ]
+}

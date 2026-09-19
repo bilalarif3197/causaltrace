@@ -1,0 +1,125 @@
+{
+  "events": [
+    {
+      "label": "Baseline liver function tests normal (ALT 28, AST 24)",
+      "category": "LAB",
+      "order": 1,
+      "date": null,
+      "display_date": "Baseline",
+      "relative_text": "before Drug A was started",
+      "date_certainty": "RELATIVE",
+      "actor": null,
+      "evidence_text": "His baseline liver function tests were normal, with ALT 28 U/L and AST 24 U/L"
+    },
+    {
+      "label": "Drug A started (oral antifungal)",
+      "category": "DRUG_START",
+      "order": 2,
+      "date": null,
+      "display_date": "Jan 03",
+      "relative_text": null,
+      "date_certainty": "EXACT",
+      "actor": "Drug A",
+      "evidence_text": "was started on Drug A, an oral antifungal agent, on 3 January for onychomycosis"
+    },
+    {
+      "label": "Drug B started (macrolide antibiotic)",
+      "category": "DRUG_START",
+      "order": 3,
+      "date": null,
+      "display_date": "Jan 08",
+      "relative_text": null,
+      "date_certainty": "EXACT",
+      "actor": "Drug B",
+      "evidence_text": "On 8 January he was prescribed Drug B, a macrolide antibiotic"
+    },
+    {
+      "label": "Community-acquired pneumonia documented on chest radiograph",
+      "category": "INFECTION",
+      "order": 4,
+      "date": null,
+      "display_date": "Jan 08",
+      "relative_text": null,
+      "date_certainty": "EXACT",
+      "actor": null,
+      "evidence_text": "a chest radiograph showed a right lower lobe infiltrate consistent with community-acquired pneumonia"
+    },
+    {
+      "label": "Malaise, nausea and dark urine",
+      "category": "EVENT_ONSET",
+      "order": 5,
+      "date": null,
+      "display_date": "Jan 18",
+      "relative_text": null,
+      "date_certainty": "EXACT",
+      "actor": null,
+      "evidence_text": "On 18 January the patient presented with malaise, nausea and dark urine"
+    },
+    {
+      "label": "ALT 642, AST 518, bilirubin 3.1 mg/dL",
+      "category": "LAB",
+      "order": 6,
+      "date": null,
+      "display_date": "Jan 18",
+      "relative_text": null,
+      "date_certainty": "EXACT",
+      "actor": null,
+      "evidence_text": "Laboratory testing showed ALT 642 U/L, AST 518 U/L, alkaline phosphatase 180 U/L and total bilirubin 3.1 mg/dL"
+    },
+    {
+      "label": "Ultrasound: no biliary obstruction",
+      "category": "DIAGNOSIS",
+      "order": 7,
+      "date": null,
+      "display_date": null,
+      "relative_text": "at presentation",
+      "date_certainty": "RELATIVE",
+      "actor": null,
+      "evidence_text": "Abdominal ultrasound demonstrated a normal biliary tree without obstruction"
+    },
+    {
+      "label": "Drug A discontinued",
+      "category": "DRUG_STOP",
+      "order": 8,
+      "date": null,
+      "display_date": "Jan 20",
+      "relative_text": null,
+      "date_certainty": "EXACT",
+      "actor": "Drug A",
+      "evidence_text": "Drug A was discontinued on 20 January"
+    },
+    {
+      "label": "Drug B continued to complete a ten-day course",
+      "category": "OTHER",
+      "order": 9,
+      "date": null,
+      "display_date": null,
+      "relative_text": "after Drug A was stopped",
+      "date_certainty": "RELATIVE",
+      "actor": "Drug B",
+      "evidence_text": "Drug B was continued to complete a ten-day course"
+    },
+    {
+      "label": "Fever resolved and pneumonia improved",
+      "category": "RECOVERY",
+      "order": 10,
+      "date": null,
+      "display_date": null,
+      "relative_text": "over the following week",
+      "date_certainty": "RELATIVE",
+      "actor": null,
+      "evidence_text": "The patient's fever resolved and the pneumonia improved over the following week"
+    },
+    {
+      "label": "Liver enzymes normalised (ALT 31 U/L)",
+      "category": "RECOVERY",
+      "order": 11,
+      "date": null,
+      "display_date": "Feb 10",
+      "relative_text": null,
+      "date_certainty": "EXACT",
+      "actor": null,
+      "evidence_text": "Liver enzymes declined gradually and had normalised by 10 February, with ALT 31 U/L"
+    }
+  ]
+}

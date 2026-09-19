@@ -1,0 +1,64 @@
+{
+  "items": [
+    {
+      "number": 1,
+      "answer": "UNKNOWN",
+      "rationale": "The narrative cites no prior literature or label association linking Drug A to hepatic injury. Outside knowledge is not admissible here.",
+      "evidence_text": null
+    },
+    {
+      "number": 2,
+      "answer": "YES",
+      "rationale": "Drug A was started on 3 January and the injury presented on 18 January, a clear and plausible temporal sequence.",
+      "evidence_text": "was started on Drug A, an oral antifungal agent, on 3 January for onychomycosis"
+    },
+    {
+      "number": 3,
+      "answer": "YES",
+      "rationale": "Liver enzymes normalised after Drug A was discontinued, which is a positive dechallenge.",
+      "evidence_text": "Liver enzymes declined gradually and had normalised by 10 February, with ALT 31 U/L"
+    },
+    {
+      "number": 4,
+      "answer": "UNKNOWN",
+      "rationale": "Explicitly no rechallenge. The narrative states the patient was not re-exposed, so this item is uninformative rather than negative.",
+      "evidence_text": "The patient was not re-exposed to Drug A"
+    },
+    {
+      "number": 5,
+      "answer": "YES",
+      "rationale": "Two competing explanations are documented: a radiographically confirmed pneumonia, and a concomitant macrolide antibiotic overlapping the injury window.",
+      "evidence_text": "a chest radiograph showed a right lower lobe infiltrate consistent with community-acquired pneumonia"
+    },
+    {
+      "number": 6,
+      "answer": "UNKNOWN",
+      "rationale": "No placebo was administered. Scoring this NO would add a point on the basis of something that never happened.",
+      "evidence_text": null
+    },
+    {
+      "number": 7,
+      "answer": "UNKNOWN",
+      "rationale": "Explicitly not measured, so no toxic concentration can be established.",
+      "evidence_text": "No serum drug concentrations were measured"
+    },
+    {
+      "number": 8,
+      "answer": "UNKNOWN",
+      "rationale": "No dose is reported and no dose change is described, so no dose-response relationship can be assessed.",
+      "evidence_text": null
+    },
+    {
+      "number": 9,
+      "answer": "NO",
+      "rationale": "The patient had previously received a related antifungal agent and tolerated it without complication, so there is documented prior exposure without a similar reaction.",
+      "evidence_text": "He had received a different antifungal agent several years earlier without complication"
+    },
+    {
+      "number": 10,
+      "answer": "YES",
+      "rationale": "The event was confirmed by laboratory testing showing marked transaminase and bilirubin elevation against a documented normal baseline.",
+      "evidence_text": "Laboratory testing showed ALT 642 U/L, AST 518 U/L, alkaline phosphatase 180 U/L and total bilirubin 3.1 mg/dL"
+    }
+  ]
+}

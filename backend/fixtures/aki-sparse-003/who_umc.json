@@ -1,0 +1,50 @@
+{
+  "classification": "Conditional/Unclassified",
+  "reasoning": "More data are required before this case can be properly assessed. Exposure did precede the injury and the event is objectively documented, but WHO-UMC 'Possible' still expects that disease and other drugs be considered, and here three recognised causes overlap the same window with nothing to separate them. Decisively, the narrative never reports whether the drug was withdrawn or what happened afterwards, so the dechallenge criterion cannot be evaluated at all. Assigning any graded causality category to this report would overstate what it contains.",
+  "major_uncertainty": "Everything that would discriminate is missing: baseline renal function, the drug start date, the timing of contrast relative to the creatinine rise, urinalysis, and the outcome after admission. A single sentence reporting what happened to renal function after the drug was stopped would change this assessment more than any other addition.",
+  "criteria": [
+    {
+      "criterion": "Plausible temporal relationship to drug intake",
+      "met": "YES",
+      "note": "Exposure preceded the injury, though no start date is given so the latency is unknown."
+    },
+    {
+      "criterion": "Cannot be explained by disease or other drugs",
+      "met": "NO",
+      "note": "Contrast exposure, hypotension and a bloodstream infection each provide a sufficient alternative explanation."
+    },
+    {
+      "criterion": "Response to withdrawal plausible (dechallenge)",
+      "met": "UNKNOWN",
+      "note": "Withdrawal is not described and the outcome was never reported."
+    },
+    {
+      "criterion": "Event definitive pharmacologically or phenomenologically",
+      "met": "UNKNOWN",
+      "note": "Objectively documented by creatinine, but no characterisation of the injury pattern and no cited class association."
+    },
+    {
+      "criterion": "Rechallenge satisfactory, if performed",
+      "met": "UNKNOWN",
+      "note": "No rechallenge described."
+    }
+  ],
+  "supporting_evidence": [
+    {
+      "statement": "Exposure preceded the injury.",
+      "evidence_text": "The patient had been receiving Drug D, an intravenous antibiotic"
+    },
+    {
+      "statement": "The event is objectively documented.",
+      "evidence_text": "Serum creatinine rose from 1.0 mg/dL to 2.4 mg/dL over three days"
+    },
+    {
+      "statement": "A competing nephrotoxic exposure in the same window.",
+      "evidence_text": "The patient was also receiving intravenous contrast for imaging during the same period"
+    },
+    {
+      "statement": "The decisive information is absent.",
+      "evidence_text": "The outcome after the admission was not reported"
+    }
+  ]
+}

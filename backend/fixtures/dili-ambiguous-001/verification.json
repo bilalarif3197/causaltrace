@@ -1,0 +1,29 @@
+{
+  "verdicts": [
+    { "id": "c000", "verdict": "SUPPORTED", "reason": "The quote names Drug A and identifies it as an oral antifungal agent." },
+    { "id": "c001", "verdict": "SUPPORTED", "reason": "The quote names Drug B and identifies it as a macrolide antibiotic." },
+    { "id": "c002", "verdict": "SUPPORTED", "reason": "The quote gives the 3 January start date for Drug A." },
+    { "id": "c003", "verdict": "SUPPORTED", "reason": "The quote gives the 8 January start date; the five-day gap follows from the two stated dates." },
+    { "id": "c005", "verdict": "SUPPORTED", "reason": "Transaminase and bilirubin elevations in the quote establish hepatocellular injury." },
+    { "id": "c006", "verdict": "SUPPORTED", "reason": "The quote gives the 18 January onset; the intervals follow from the stated start dates." },
+    { "id": "c007", "verdict": "SUPPORTED", "reason": "The quote lists both comorbidities." },
+    { "id": "c008", "verdict": "SUPPORTED", "reason": "The quote documents a radiographic infiltrate consistent with pneumonia." },
+    { "id": "c009", "verdict": "SUPPORTED", "reason": "The quote states baseline ALT and AST were normal." },
+    { "id": "c010", "verdict": "SUPPORTED", "reason": "The quote reports the peak transaminase values." },
+    { "id": "c011", "verdict": "SUPPORTED", "reason": "The quote reports a normal biliary tree without obstruction." },
+    { "id": "c012", "verdict": "SUPPORTED", "reason": "The quote states the serologies were not obtained." },
+    { "id": "c013", "verdict": "SUPPORTED", "reason": "The quote states the discontinuation date." },
+    { "id": "c014", "verdict": "SUPPORTED", "reason": "The quote documents normalisation of liver enzymes by 10 February." },
+    { "id": "c015", "verdict": "SUPPORTED", "reason": "The quote states the patient was not re-exposed." },
+    { "id": "c016", "verdict": "SUPPORTED", "reason": "The quote describes prior antifungal exposure without complication." },
+    { "id": "c018", "verdict": "SUPPORTED", "reason": "The quote states no serum drug concentrations were measured." },
+    { "id": "c019", "verdict": "SUPPORTED", "reason": "The quote confirms Drug B continued through the period of injury and recovery." },
+    { "id": "c020", "verdict": "SUPPORTED", "reason": "The quote documents community-acquired pneumonia." },
+    { "id": "c021", "verdict": "SUPPORTED", "reason": "The quote shows the event was confirmed by laboratory testing." },
+    {
+      "id": "c022",
+      "verdict": "NOT_SUPPORTED",
+      "reason": "The quote states the serologies were NOT obtained, which is the opposite of excluding viral hepatitis. Untested is not excluded."
+    }
+  ]
+}

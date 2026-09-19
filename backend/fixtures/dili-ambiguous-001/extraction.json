@@ -1,0 +1,196 @@
+{
+  "claims": [
+    {
+      "slot": "suspected_drug",
+      "claim": "The suspected drug is Drug A, an oral antifungal agent.",
+      "value": "Drug A (oral antifungal agent)",
+      "evidence_text": "was started on Drug A, an oral antifungal agent, on 3 January for onychomycosis",
+      "confidence": 0.97,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "concomitant_drugs",
+      "claim": "The patient was also receiving Drug B, a macrolide antibiotic.",
+      "value": "Drug B (macrolide antibiotic)",
+      "evidence_text": "On 8 January he was prescribed Drug B, a macrolide antibiotic",
+      "confidence": 0.96,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "drug_timing",
+      "claim": "Drug A was started on 3 January.",
+      "value": "3 January",
+      "evidence_text": "on 3 January for onychomycosis",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "drug_timing",
+      "claim": "Drug B was started on 8 January, five days after Drug A.",
+      "value": "8 January",
+      "evidence_text": "On 8 January he was prescribed Drug B",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "doses",
+      "claim": "No dose is reported for either drug.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "adverse_event",
+      "claim": "The adverse event is acute hepatocellular liver injury.",
+      "value": "Acute hepatocellular liver injury",
+      "evidence_text": "Laboratory testing showed ALT 642 U/L, AST 518 U/L, alkaline phosphatase 180 U/L and total bilirubin 3.1 mg/dL",
+      "confidence": 0.94,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "event_onset",
+      "claim": "Symptoms began on 18 January, 15 days after Drug A and 10 days after Drug B.",
+      "value": "18 January",
+      "evidence_text": "On 18 January the patient presented with malaise, nausea and dark urine",
+      "confidence": 0.93,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "diagnoses_comorbidities",
+      "claim": "The patient has type 2 diabetes and hypertension.",
+      "value": "Type 2 diabetes; hypertension",
+      "evidence_text": "type 2 diabetes and hypertension",
+      "confidence": 0.96,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "infections",
+      "claim": "Community-acquired pneumonia was documented radiographically.",
+      "value": "Community-acquired pneumonia",
+      "evidence_text": "a chest radiograph showed a right lower lobe infiltrate consistent with community-acquired pneumonia",
+      "confidence": 0.94,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "labs",
+      "claim": "Baseline liver function tests were normal before Drug A.",
+      "value": "ALT 28 U/L, AST 24 U/L",
+      "evidence_text": "His baseline liver function tests were normal, with ALT 28 U/L and AST 24 U/L",
+      "confidence": 0.96,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "labs",
+      "claim": "Transaminases peaked markedly above baseline.",
+      "value": "ALT 642 U/L, AST 518 U/L",
+      "evidence_text": "ALT 642 U/L, AST 518 U/L",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "diagnostic_tests",
+      "claim": "Biliary obstruction was excluded by ultrasound.",
+      "value": "Normal biliary tree, no obstruction",
+      "evidence_text": "Abdominal ultrasound demonstrated a normal biliary tree without obstruction",
+      "confidence": 0.93,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "diagnostic_tests",
+      "claim": "Viral hepatitis serology was not performed.",
+      "value": "Hepatitis A, B, C serologies not obtained",
+      "evidence_text": "Hepatitis A, B and C serologies were not obtained",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "treatment_withdrawal",
+      "claim": "Drug A was discontinued on 20 January.",
+      "value": "20 January",
+      "evidence_text": "Drug A was discontinued on 20 January",
+      "confidence": 0.96,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "dechallenge_outcome",
+      "claim": "Liver enzymes normalised after Drug A was withdrawn.",
+      "value": "Normalised by 10 February (ALT 31 U/L)",
+      "evidence_text": "Liver enzymes declined gradually and had normalised by 10 February, with ALT 31 U/L",
+      "confidence": 0.93,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "rechallenge",
+      "claim": "No rechallenge with Drug A was performed.",
+      "value": "Not performed",
+      "evidence_text": "The patient was not re-exposed to Drug A",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "previous_exposure",
+      "claim": "The patient previously tolerated a different antifungal agent without reaction.",
+      "value": "Prior antifungal exposure without complication",
+      "evidence_text": "He had received a different antifungal agent several years earlier without complication",
+      "confidence": 0.92,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "dose_response",
+      "claim": "No dose change is described, so no dose-response relationship can be assessed.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    },
+    {
+      "slot": "drug_levels",
+      "claim": "Serum drug concentrations were not measured.",
+      "value": "Not measured",
+      "evidence_text": "No serum drug concentrations were measured",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "alternative_causes",
+      "claim": "Drug B, a second potentially hepatotoxic agent, overlapped the injury window.",
+      "value": "Concomitant macrolide (Drug B)",
+      "evidence_text": "Drug B was continued to complete a ten-day course",
+      "confidence": 0.9,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "alternative_causes",
+      "claim": "An active pneumonia was present around the time of the liver injury.",
+      "value": "Community-acquired pneumonia",
+      "evidence_text": "consistent with community-acquired pneumonia",
+      "confidence": 0.88,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "objective_evidence",
+      "claim": "The event was confirmed by laboratory testing.",
+      "value": "Serum transaminases and bilirubin",
+      "evidence_text": "Laboratory testing showed ALT 642 U/L",
+      "confidence": 0.95,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "alternative_causes",
+      "claim": "Viral hepatitis was excluded as an alternative cause.",
+      "value": "Viral hepatitis excluded",
+      "evidence_text": "Hepatitis A, B and C serologies were not obtained",
+      "confidence": 0.61,
+      "status": "SUPPORTED"
+    },
+    {
+      "slot": "prior_knowledge",
+      "claim": "The narrative cites no prior literature linking Drug A to liver injury.",
+      "value": null,
+      "evidence_text": null,
+      "confidence": 0.0,
+      "status": "UNKNOWN"
+    }
+  ]
+}
