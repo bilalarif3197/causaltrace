@@ -19,8 +19,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: { "Content-Type": "application/json", ...init?.headers },
     });
   } catch {
+    // The browser deliberately hides the difference between "connection
+    // refused" and "blocked by CORS" from JavaScript, so we cannot tell which
+    // happened. Naming both beats confidently blaming the wrong one.
     throw new ApiError(
-      `Cannot reach the CausalTrace API at ${BASE}. Start it with: cd backend && uvicorn main:app --reload`,
+      `Could not complete the request to ${BASE}. Either the API is not running, or the ` +
+        `browser blocked the response as cross-origin. ` +
+        `Start the API with: cd backend && .venv/bin/uvicorn main:app --reload --port 8000  ` +
+        `If it is already running, check the browser console for a CORS error and confirm ` +
+        `this page's origin (${typeof window === "undefined" ? "unknown" : window.location.origin}) ` +
+        `is allowed by the API.`,
       0,
     );
   }

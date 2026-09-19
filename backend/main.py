@@ -25,9 +25,17 @@ DISCLAIMER = (
 
 app = FastAPI(title="CausalTrace API", version="0.1.0", description=DISCLAIMER)
 
+# Any loopback origin, on any port. The frontend dev server, a browser preview
+# proxy and an SSH tunnel all present different origins for the same machine --
+# and browsers treat localhost and 127.0.0.1 as distinct origins regardless. A
+# fixed allowlist turns that into a "cannot reach the API" error that looks like
+# the server is down. Scoped to loopback only; this is not a wildcard.
+LOOPBACK_ORIGIN_REGEX = r"^https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$"
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o for o in os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(",") if o],
+    allow_origins=[o for o in os.environ.get("CORS_ORIGINS", "").split(",") if o],
+    allow_origin_regex=os.environ.get("CORS_ORIGIN_REGEX", LOOPBACK_ORIGIN_REGEX),
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
