@@ -1,0 +1,16 @@
+{
+  "items": [
+    { "number": 1, "answer": "NO" },
+    { "number": 2, "answer": "YES" },
+    { "number": 3, "answer": "NO" },
+    { "number": 4, "answer": "NO" },
+    { "number": 5, "answer": "YES" },
+    { "number": 6, "answer": "NO" },
+    { "number": 7, "answer": "NO" },
+    { "number": 8, "answer": "NO" },
+    { "number": 9, "answer": "NO" },
+    { "number": 10, "answer": "YES" }
+  ],
+  "total_score": 4,
+  "category": "Possible"
+}

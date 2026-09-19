@@ -1,0 +1,16 @@
+{
+  "items": [
+    { "number": 1, "answer": "YES" },
+    { "number": 2, "answer": "YES" },
+    { "number": 3, "answer": "YES" },
+    { "number": 4, "answer": "YES" },
+    { "number": 5, "answer": "NO" },
+    { "number": 6, "answer": "NO" },
+    { "number": 7, "answer": "NO" },
+    { "number": 8, "answer": "NO" },
+    { "number": 9, "answer": "YES" },
+    { "number": 10, "answer": "YES" }
+  ],
+  "total_score": 11,
+  "category": "Definite"
+}

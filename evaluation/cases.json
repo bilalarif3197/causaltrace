@@ -1,0 +1,108 @@
+{
+  "dataset": {
+    "name": "CausalTrace development set",
+    "version": "0.1.0",
+    "reference_provenance": "author-assigned",
+    "IMPORTANT": [
+      "These are SYNTHETIC narratives written to exercise the pipeline. They are not real",
+      "patient data and they are not published case reports.",
+      "",
+      "The reference values below are AUTHOR-ASSIGNED, derived by applying the published",
+      "Naranjo worksheet to each synthetic narrative by hand. They are NOT published",
+      "reference standards. Numbers computed against this set measure self-consistency",
+      "and regression safety -- they are NOT evidence of real-world accuracy, and must",
+      "never be reported as such.",
+      "",
+      "To produce meaningful accuracy numbers, add real cases from the PMC Open Access",
+      "Subset (filter PubMed to the 'Case Reports' publication type, restrict to the OA",
+      "subset) where the publication states its own Naranjo score or WHO-UMC category,",
+      "and set reference_source to 'published' with the PMCID. Retrieve only via",
+      "E-utilities, the BioC API, FTP or the cloud service -- bulk scraping of the PMC",
+      "website is prohibited."
+    ],
+    "schema": {
+      "case_id": "stable identifier",
+      "narrative": "full case narrative text. OPTIONAL for the built-in dev cases, which resolve their narrative from backend/services/cases.py by case_id so the text has a single source of truth. REQUIRED for any case you add.",
+      "suspected_drug": "drug under assessment",
+      "adverse_event": "event under assessment",
+      "reference_naranjo_score": "integer -4..13, or null if unavailable",
+      "reference_naranjo_category": "Definite|Probable|Possible|Doubtful, or null",
+      "reference_who_umc": "WHO-UMC category, or null",
+      "reference_item_answers": "map of Naranjo item number -> YES|NO|UNKNOWN, or null",
+      "reference_source": "'published' (with pmcid) or 'author-assigned'",
+      "pmcid": "PMC identifier when reference_source is 'published', else null",
+      "notes": "why this case is in the set"
+    }
+  },
+  "cases": [
+    {
+      "case_id": "dili-ambiguous-001",
+      "suspected_drug": "Drug A",
+      "adverse_event": "Acute liver injury",
+      "reference_naranjo_score": 3,
+      "reference_naranjo_category": "Possible",
+      "reference_who_umc": "Possible",
+      "reference_item_answers": {
+        "1": "UNKNOWN",
+        "2": "YES",
+        "3": "YES",
+        "4": "UNKNOWN",
+        "5": "YES",
+        "6": "UNKNOWN",
+        "7": "UNKNOWN",
+        "8": "UNKNOWN",
+        "9": "NO",
+        "10": "YES"
+      },
+      "reference_source": "author-assigned",
+      "pmcid": null,
+      "notes": "Two plausible culprit drugs plus a documented infection. Tests whether a system will commit to the suspected drug when a competing explanation was never excluded. The decisive trap is item 5: answering NO rather than YES inflates the score by 3 points and moves the band."
+    },
+    {
+      "case_id": "cutaneous-clear-002",
+      "suspected_drug": "Drug C",
+      "adverse_event": "Maculopapular rash",
+      "reference_naranjo_score": 10,
+      "reference_naranjo_category": "Definite",
+      "reference_who_umc": "Certain",
+      "reference_item_answers": {
+        "1": "YES",
+        "2": "YES",
+        "3": "YES",
+        "4": "YES",
+        "5": "NO",
+        "6": "UNKNOWN",
+        "7": "UNKNOWN",
+        "8": "UNKNOWN",
+        "9": "YES",
+        "10": "YES"
+      },
+      "reference_source": "author-assigned",
+      "pmcid": null,
+      "notes": "Positive dechallenge and positive rechallenge with no concomitant drugs. A control for over-abstention: a system that hedges here is miscalibrated in the other direction. Note item 5 is a legitimate NO because the narrative positively excludes alternatives rather than merely omitting them."
+    },
+    {
+      "case_id": "aki-sparse-003",
+      "suspected_drug": "Drug D",
+      "adverse_event": "Acute kidney injury",
+      "reference_naranjo_score": 2,
+      "reference_naranjo_category": "Possible",
+      "reference_who_umc": "Conditional/Unclassified",
+      "reference_item_answers": {
+        "1": "UNKNOWN",
+        "2": "YES",
+        "3": "UNKNOWN",
+        "4": "UNKNOWN",
+        "5": "YES",
+        "6": "UNKNOWN",
+        "7": "UNKNOWN",
+        "8": "UNKNOWN",
+        "9": "UNKNOWN",
+        "10": "YES"
+      },
+      "reference_source": "author-assigned",
+      "pmcid": null,
+      "notes": "An information-poor report with three overlapping causes. Seven of ten items are UNKNOWN and the resolved-score range spans all four bands, so the point score is close to meaningless. Primarily a test of the correct-UNKNOWN rate."
+    }
+  ]
+}
