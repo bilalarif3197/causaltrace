@@ -1,8 +1,14 @@
-import type { AnalysisResult, ExampleCase, HealthInfo } from "./types";
+import type {
+  AuditEntry,
+  CaseEnvelope,
+  CaseSummary,
+  DemoCase,
+  HealthInfo,
+  ReviewerStatus,
+} from "./review";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-/** Error carrying the backend's human-readable detail (e.g. mock-mode limits). */
 export class ApiError extends Error {
   status: number;
   constructor(message: string, status: number) {
@@ -19,16 +25,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: { "Content-Type": "application/json", ...init?.headers },
     });
   } catch {
-    // The browser deliberately hides the difference between "connection
-    // refused" and "blocked by CORS" from JavaScript, so we cannot tell which
-    // happened. Naming both beats confidently blaming the wrong one.
+    // The browser hides the difference between connection-refused and
+    // CORS-blocked from JavaScript, so name both rather than guess wrong.
     throw new ApiError(
-      `Could not complete the request to ${BASE}. Either the API is not running, or the ` +
-        `browser blocked the response as cross-origin. ` +
-        `Start the API with: cd backend && .venv/bin/uvicorn main:app --reload --port 8000  ` +
-        `If it is already running, check the browser console for a CORS error and confirm ` +
-        `this page's origin (${typeof window === "undefined" ? "unknown" : window.location.origin}) ` +
-        `is allowed by the API.`,
+      `Could not reach the CausalTrace API at ${BASE}. Either it is not running, or the ` +
+        `browser blocked the response as cross-origin. Start it with: ` +
+        `cd backend && .venv/bin/uvicorn main:app --reload --port 8000`,
       0,
     );
   }
@@ -38,23 +40,115 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     try {
       const body = await res.json();
       if (typeof body?.detail === "string") detail = body.detail;
-      else if (Array.isArray(body?.detail)) detail = body.detail.map((d: { msg: string }) => d.msg).join("; ");
+      else if (Array.isArray(body?.detail))
+        detail = body.detail.map((d: { msg: string }) => d.msg).join("; ");
     } catch {
       /* keep the generic message */
     }
     throw new ApiError(detail, res.status);
   }
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
 
+const post = <T>(path: string, body?: unknown) =>
+  request<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined });
+
+/* -------------------------------------------------------------------------- */
+
 export const getHealth = () => request<HealthInfo>("/api/health");
+export const getDemoCases = () => request<DemoCase[]>("/api/demo-cases");
+export const listCases = () => request<CaseSummary[]>("/api/cases");
+export const getCase = (id: string) => request<CaseEnvelope>(`/api/cases/${id}`);
+export const deleteCase = (id: string) =>
+  request<void>(`/api/cases/${id}`, { method: "DELETE" });
 
-export const getExamples = () => request<ExampleCase[]>("/api/examples");
-
-export const analyze = (body: {
+export const createCase = (body: {
   narrative: string;
   suspected_drug: string;
   adverse_event: string;
-  case_id?: string | null;
-  run_who_umc?: boolean;
-}) => request<AnalysisResult>("/api/analyze", { method: "POST", body: JSON.stringify(body) });
+  title?: string;
+  indication?: string | null;
+  age?: string | null;
+  sex?: string | null;
+  concomitant_medications?: string | null;
+  comorbidities?: string | null;
+  demo_case_id?: string | null;
+}) => post<CaseEnvelope>("/api/cases", body);
+
+export type SuggestStage =
+  | "facts"
+  | "timeline"
+  | "dimensions"
+  | "hypotheses"
+  | "missing"
+  | "naranjo"
+  | "who_umc"
+  | "rationale";
+
+export const runSuggest = (id: string, stage: SuggestStage) =>
+  post<{ envelope: CaseEnvelope; note: string; stage: string }>(
+    `/api/cases/${id}/suggest/${stage}`,
+  );
+
+export const reviewEntity = (
+  id: string,
+  entityType: string,
+  entityId: string,
+  body: {
+    status?: ReviewerStatus;
+    value?: string | null;
+    note?: string | null;
+    extra?: Record<string, unknown>;
+  },
+) =>
+  request<CaseEnvelope>(`/api/cases/${id}/review/${entityType}/${entityId}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+
+export const bulkReview = (
+  id: string,
+  body: { entity_type: string; status: ReviewerStatus; section?: string | null },
+) => post<CaseEnvelope>(`/api/cases/${id}/review/bulk`, body);
+
+export const addFact = (id: string, body: { field: string; value: string; note?: string }) =>
+  post<CaseEnvelope>(`/api/cases/${id}/facts`, body);
+
+export const addEvent = (
+  id: string,
+  body: {
+    label: string;
+    order_index?: number;
+    date_kind?: string;
+    display_date?: string | null;
+    relative_text?: string | null;
+    category?: string;
+    actor?: string | null;
+  },
+) => post<CaseEnvelope>(`/api/cases/${id}/events`, body);
+
+export const deleteEvent = (id: string, eventId: string) =>
+  request<CaseEnvelope>(`/api/cases/${id}/events/${eventId}`, { method: "DELETE" });
+
+export const addHypothesis = (id: string, body: { label: string; kind?: string }) =>
+  post<CaseEnvelope>(`/api/cases/${id}/hypotheses`, body);
+
+export const addMissing = (id: string, body: { prompt: string; why_it_matters?: string }) =>
+  post<CaseEnvelope>(`/api/cases/${id}/missing`, body);
+
+export const setConclusion = (
+  id: string,
+  body: {
+    final_assessment?: string | null;
+    primary_cause_hypothesis_id?: string | null;
+    reviewer_rationale?: string | null;
+    signed_off?: boolean;
+  },
+) =>
+  request<CaseEnvelope>(`/api/cases/${id}/conclusion`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+
+export const getAudit = (id: string) => request<AuditEntry[]>(`/api/cases/${id}/audit`);
