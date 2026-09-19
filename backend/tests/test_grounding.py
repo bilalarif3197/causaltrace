@@ -208,7 +208,7 @@ def test_missing_verdict_is_ambiguous_not_supported():
         span=locate_span(NARRATIVE, "ALT rose to 642 U/L"),
     )
     [out] = verifier.verify(StubClient({"verdicts": []}), narrative=NARRATIVE, claims=[claim], case_id=None)
-    assert out.verdict is Verdict.AMBIGUOUS
+    assert out.verdict is Verdict.PARTIALLY_SUPPORTED
     assert out.dropped is False
 
 

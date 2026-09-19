@@ -30,7 +30,7 @@ class Verdict(str, Enum):
 
     SUPPORTED = "SUPPORTED"
     NOT_SUPPORTED = "NOT_SUPPORTED"
-    AMBIGUOUS = "AMBIGUOUS"
+    PARTIALLY_SUPPORTED = "PARTIALLY_SUPPORTED"
 
 
 class Answer(str, Enum):
@@ -284,3 +284,9 @@ class ExampleCase(BaseModel):
     suspected_drug: str
     adverse_event: str
     is_ambiguous: bool = False
+    # Optional intake context, pre-filled when the reviewer loads the case.
+    indication: Optional[str] = None
+    age: Optional[str] = None
+    sex: Optional[str] = None
+    concomitant_medications: Optional[str] = None
+    comorbidities: Optional[str] = None

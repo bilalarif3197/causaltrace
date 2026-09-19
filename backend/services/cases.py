@@ -100,7 +100,44 @@ AKI_SPARSE = ExampleCase(
     ),
 )
 
-EXAMPLE_CASES: list[ExampleCase] = [DILI_AMBIGUOUS, CUTANEOUS_CLEAR, AKI_SPARSE]
+TMPSMX_DILI = ExampleCase(
+    case_id="tmpsmx-dili-004",
+    title="TMP-SMX and acute liver injury",
+    description=(
+        "A named-generic case with a positive dechallenge, a documented over-the-counter "
+        "alternative exposure, and no rechallenge. The reviewer has to weigh the antibiotic "
+        "against low-dose acetaminophen."
+    ),
+    suspected_drug="Trimethoprim-sulfamethoxazole (TMP-SMX)",
+    adverse_event="Acute liver injury",
+    is_ambiguous=True,
+    indication="Uncomplicated urinary tract infection",
+    age="34",
+    sex="Female",
+    concomitant_medications="Acetaminophen as needed; combined oral contraceptive",
+    comorbidities="None significant",
+    narrative=(
+        "A 34-year-old woman with no significant past medical history began "
+        "trimethoprim-sulfamethoxazole (TMP-SMX) 160/800 mg twice daily on March 2 for an "
+        "uncomplicated urinary tract infection. She was also taking a combined oral "
+        "contraceptive, and reported taking acetaminophen intermittently for headache at a "
+        "dose of 500 to 1,000 mg per day. She did not drink alcohol.\n\n"
+        "On March 7 she developed fatigue and nausea. She completed the ten-day antibiotic "
+        "course on March 11. Symptoms persisted, and on March 16 she presented to her "
+        "physician with malaise and scleral icterus. Laboratory testing that day showed ALT "
+        "684 U/L, AST 512 U/L, alkaline phosphatase 142 U/L and total bilirubin 2.8 mg/dL. "
+        "Liver function had not been measured before she started the antibiotic.\n\n"
+        "Hepatitis A, B and C serologies were negative. Anti-nuclear and anti-smooth muscle "
+        "antibodies were negative. Abdominal ultrasound showed a normal liver echotexture "
+        "with patent vessels and no biliary dilatation. Acetaminophen was discontinued at "
+        "presentation; no serum acetaminophen concentration was obtained.\n\n"
+        "By March 23 liver enzymes had begun to improve, and by late April liver tests had "
+        "returned to normal. The patient was advised to avoid TMP-SMX in future and was not "
+        "re-exposed. She reported no previous reaction to sulfonamide antibiotics."
+    ),
+)
+
+EXAMPLE_CASES: list[ExampleCase] = [TMPSMX_DILI, DILI_AMBIGUOUS, CUTANEOUS_CLEAR, AKI_SPARSE]
 
 CASES_BY_ID = {c.case_id: c for c in EXAMPLE_CASES}
 

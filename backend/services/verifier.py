@@ -32,7 +32,7 @@ SCHEMA: dict[str, Any] = {
                 "type": "object",
                 "properties": {
                     "id": {"type": "string"},
-                    "verdict": {"type": "string", "enum": ["SUPPORTED", "NOT_SUPPORTED", "AMBIGUOUS"]},
+                    "verdict": {"type": "string", "enum": ["SUPPORTED", "NOT_SUPPORTED", "PARTIALLY_SUPPORTED"]},
                     "reason": {"type": "string", "description": "One sentence."},
                 },
             },
@@ -48,7 +48,7 @@ whether that quote genuinely supports that specific claim.
 - SUPPORTED: the quote directly states the claim.
 - NOT_SUPPORTED: the quote does not state the claim, concerns something else, or the
   claim adds specifics (a dose, a date, a causal link) the quote does not contain.
-- AMBIGUOUS: the quote is related but does not settle the claim.
+- PARTIALLY_SUPPORTED: the quote is related but does not settle the claim.
 
 You are auditing, not assisting. Do not be charitable, do not repair a weak claim, and
 do not use outside clinical knowledge -- only the narrative and the quote. A claim that
@@ -86,11 +86,11 @@ def verify(client, *, narrative: str, claims: list[Claim], case_id: str | None) 
         row = by_id.get(claim.id)
         if not row:
             # No verdict returned: treat as unverified rather than verified.
-            claim.verdict = Verdict.AMBIGUOUS
+            claim.verdict = Verdict.PARTIALLY_SUPPORTED
             claim.verdict_reason = "Verifier returned no verdict for this claim."
             continue
 
-        claim.verdict = Verdict(row.get("verdict", "AMBIGUOUS"))
+        claim.verdict = Verdict(row.get("verdict", "PARTIALLY_SUPPORTED"))
         claim.verdict_reason = row.get("reason", "")
 
         if claim.verdict is Verdict.NOT_SUPPORTED:
@@ -114,7 +114,7 @@ Decide only whether that quote establishes that specific answer to that specific
       the drug was discontinued -- stopping is not improving;
     * item 4 or 6 answered NO where the quote shows the rechallenge or placebo was never
       performed -- "not done" does not establish "done, and negative".
-- AMBIGUOUS: related but does not settle it.
+- PARTIALLY_SUPPORTED: related but does not settle it.
 
 One exception, for a structural reason. Item 5 (alternative causes) answered NO is a
 GLOBAL negative: "nothing else could have caused this." A global negative can rarely be
@@ -168,10 +168,10 @@ def verify_answers(client, *, narrative: str, items: list, case_id: str | None) 
     for item in targets:
         row = by_id.get(f"item{item.number}")
         if not row:
-            item.verdict = V.AMBIGUOUS
+            item.verdict = V.PARTIALLY_SUPPORTED
             item.verdict_reason = "Verifier returned no verdict for this item."
             continue
-        item.verdict = V(row.get("verdict", "AMBIGUOUS"))
+        item.verdict = V(row.get("verdict", "PARTIALLY_SUPPORTED"))
         item.verdict_reason = row.get("reason", "")
         if item.verdict is V.NOT_SUPPORTED:
             # An answer whose citation does not establish it must not move the score.
@@ -188,7 +188,7 @@ def summarize(claims: list[Claim]) -> VerificationSummary:
             s.supported += 1
         elif c.verdict is Verdict.NOT_SUPPORTED:
             s.not_supported += 1
-        elif c.verdict is Verdict.AMBIGUOUS:
+        elif c.verdict is Verdict.PARTIALLY_SUPPORTED:
             s.ambiguous += 1
         if c.dropped:
             s.dropped += 1

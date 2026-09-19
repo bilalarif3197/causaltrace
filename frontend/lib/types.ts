@@ -1,7 +1,7 @@
 /** Mirrors backend/schemas/models.py. Keep in sync. */
 
 export type ClaimStatus = "SUPPORTED" | "UNKNOWN";
-export type Verdict = "SUPPORTED" | "NOT_SUPPORTED" | "AMBIGUOUS";
+export type Verdict = "SUPPORTED" | "NOT_SUPPORTED" | "PARTIALLY_SUPPORTED";
 export type Answer = "YES" | "NO" | "UNKNOWN";
 export type DateCertainty = "EXACT" | "RELATIVE" | "UNKNOWN";
 

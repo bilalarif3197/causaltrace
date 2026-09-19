@@ -158,7 +158,7 @@ export default function NaranjoTable({
                         citation rejected → reset to UNKNOWN
                       </p>
                     )}
-                    {item.verdict === "AMBIGUOUS" && (
+                    {item.verdict === "PARTIALLY_SUPPORTED" && (
                       <p className="mt-1 text-[10px] text-unknown-400">citation ambiguous</p>
                     )}
                   </td>
