@@ -125,9 +125,65 @@ For live analysis of arbitrary narratives:
 cp .env.example backend/.env    # then set OPENAI_API_KEY
 ```
 
-Any model supporting strict JSON-schema structured outputs works; override with
-`OPENAI_MODEL`. All provider code is isolated in `backend/services/llm_client.py` — swapping
-to another vendor means adding one subclass, and no service module imports a vendor SDK.
+### Any OpenAI-compatible provider
+
+You do not need an OpenAI account. Set `OPENAI_BASE_URL` and CausalTrace will run against
+Groq, OpenRouter, Together, DeepSeek, or a local Ollama / llama.cpp server:
+
+```bash
+# DeepSeek
+OPENAI_BASE_URL=https://api.deepseek.com
+OPENAI_MODEL=deepseek-flash
+OPENAI_MAX_TOKENS=8192
+OPENAI_EXTRA_BODY={"thinking": {"type": "disabled"}}
+
+# Groq free tier
+OPENAI_BASE_URL=https://api.groq.com/openai/v1
+OPENAI_MODEL=llama-3.3-70b-versatile
+
+# Local Ollama, no key required
+OPENAI_BASE_URL=http://localhost:11434/v1
+OPENAI_MODEL=llama3.1
+OPENAI_API_KEY=ollama
+```
+
+Check any configuration with a single cheap call before running the app:
+
+```bash
+cd backend && .venv/bin/python preflight.py
+```
+
+`OPENAI_EXTRA_BODY` is merged into every request, which keeps vendor quirks in configuration
+rather than in the client. The DeepSeek case is a good example of why it is needed: **thinking
+mode is enabled by default, and in thinking mode DeepSeek silently ignores `temperature`** —
+documented as "will not trigger an error but will also have no effect." Determinism would be
+lost with nothing raised, so the shipped config disables thinking. That also makes
+`temperature=0` take effect and cuts cost, and it suits the task — extraction wants verbatim
+fidelity, not exploration. Drop the line to let the model reason first.
+
+Strict JSON-schema structured output is an OpenAI extension that most compatible endpoints
+implement only partially, so the client **negotiates downward on first use** and remembers
+what worked:
+
+| Mode | Request | Typical provider |
+| --- | --- | --- |
+| `strict` | `response_format=json_schema`, `strict: true` | OpenAI |
+| `json_object` | `response_format=json_object` + schema in prompt | Groq, OpenRouter |
+| `prompt` | no `response_format`, schema in prompt | everything, incl. local |
+
+Negotiation is driven by the provider actually rejecting the request (HTTP 400), not by
+matching model names, which go stale. Authentication and rate-limit errors are **re-raised
+immediately** rather than being mistaken for an unsupported format — degrading the output
+format cannot fix a bad key.
+
+When a weaker mode is in use the output is no longer schema-enforced, so that is reported as
+an analysis warning in the UI and via `GET /api/health`. Parsing tolerates markdown fences and
+prose preamble, and the pipeline stages read model output defensively, so a weaker provider
+yields **more UNKNOWNs rather than a crash** — the correct failure direction here. Force a mode
+with `OPENAI_JSON_MODE` if auto-negotiation misbehaves.
+
+All provider code lives in `backend/services/llm_client.py`; no service module imports a
+vendor SDK.
 
 ---
 

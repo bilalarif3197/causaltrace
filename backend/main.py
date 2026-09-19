@@ -44,6 +44,10 @@ def health() -> dict:
         "model": _client.name,
         "disclaimer": DISCLAIMER,
         "mock_cases": getattr(_client, "available_cases", list)(),
+        # Which structured-output mode the provider actually accepted. None
+        # until the first live call negotiates it.
+        "json_mode": getattr(_client, "active_json_mode", None),
+        "notes": getattr(_client, "notes", []),
     }
 
 

@@ -110,6 +110,12 @@ def run_analysis(client, req: AnalyzeRequest) -> AnalysisResult:
     if claims and grounded == 0:
         warnings.append("No claim in this narrative could be grounded in source text.")
 
+    # If the provider could not honour strict JSON schema, say so. Output in a
+    # degraded mode is not schema-enforced, which the reader should know.
+    for note in getattr(client, "notes", []):
+        if note not in warnings:
+            warnings.append(note)
+
     return AnalysisResult(
         case_id=case_id,
         narrative=narrative,
