@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import * as api from "@/lib/api";
 import type { SuggestStage } from "@/lib/api";
@@ -18,6 +18,28 @@ import WhoUmc from "@/components/steps/WhoUmc";
 import Conclusion from "@/components/steps/Conclusion";
 import Report from "@/components/steps/Report";
 import type { StepProps } from "@/components/steps/types";
+
+/**
+ * Stages run automatically the first time a case is opened.
+ *
+ * `rationale` is deliberately excluded. It drafts from reviewer-confirmed
+ * evidence and pre-fills the conclusion field, so running it before the
+ * reviewer has confirmed anything would put machine text into the human's
+ * conclusion — the precise failure this product exists to avoid. The reviewer
+ * triggers it from the Conclusion step once they have something to say.
+ *
+ * `missing` is included, but it reads better after review: re-running it later
+ * lets it see what the reviewer actually confirmed.
+ */
+const AUTO_STAGES: { stage: SuggestStage; label: string }[] = [
+  { stage: "facts", label: "Extracting evidence" },
+  { stage: "timeline", label: "Building the timeline" },
+  { stage: "dimensions", label: "Analysing causality dimensions" },
+  { stage: "hypotheses", label: "Finding competing causes" },
+  { stage: "naranjo", label: "Answering Naranjo items" },
+  { stage: "missing", label: "Identifying information gaps" },
+  { stage: "who_umc", label: "Drafting a WHO-UMC view" },
+];
 
 const SCREENS: Record<StepId, (p: StepProps) => React.ReactNode> = {
   evidence: EvidenceReview,
@@ -41,12 +63,52 @@ export default function CaseWorkspace({ params }: { params: Promise<{ id: string
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
+  /** Progress of the first-open analysis, or null when not running. */
+  const [auto, setAuto] = useState<{ index: number; label: string } | null>(null);
+  const [autoStalled, setAutoStalled] = useState(false);
+  const cancelled = useRef(false);
+  const autoStarted = useRef(false);
+
+  /** Run the remaining first-open stages, one at a time so progress is visible. */
+  const runAuto = useCallback(
+    async (from: string[]) => {
+      cancelled.current = false;
+      setAutoStalled(false);
+      const todo = AUTO_STAGES.filter((s) => !from.includes(s.stage));
+
+      for (let i = 0; i < todo.length; i++) {
+        if (cancelled.current) break;
+        setAuto({ index: AUTO_STAGES.length - todo.length + i, label: todo[i].label });
+        try {
+          const res = await api.runSuggest(id, todo[i].stage);
+          setEnvelope(res.envelope);
+        } catch (e) {
+          // Stop rather than firing six more failing calls. The reviewer can
+          // resume, or just use the per-step buttons.
+          setError(e instanceof Error ? e.message : String(e));
+          setAutoStalled(true);
+          break;
+        }
+      }
+      setAuto(null);
+    },
+    [id],
+  );
+
   useEffect(() => {
     api
       .getCase(id)
-      .then(setEnvelope)
+      .then((env) => {
+        setEnvelope(env);
+        // First open only: an empty `stages_run` means nothing has been
+        // suggested yet. It is persisted, so a refresh will not re-trigger.
+        if (env.case.stages_run.length === 0 && !autoStarted.current) {
+          autoStarted.current = true;
+          void runAuto([]);
+        }
+      })
       .catch((e) => setError(e.message));
-  }, [id]);
+  }, [id, runAuto]);
 
   /** Run a mutation, fold the new envelope in, and surface failures. */
   const run = useCallback(
@@ -171,22 +233,81 @@ export default function CaseWorkspace({ params }: { params: Promise<{ id: string
 
         {/* Active step */}
         <div className="min-w-0 space-y-4">
-          {note && (
+          {auto && (
+            <section className="rounded-xl border border-violet-400/40 bg-violet-400/10 px-4 py-3.5">
+              <div className="flex flex-wrap items-center gap-3">
+                <span
+                  className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-300/30 border-t-violet-300"
+                  aria-hidden
+                />
+                <p className="text-[12.5px] font-medium text-slate-soft">
+                  Preparing this case — step {auto.index + 1} of {AUTO_STAGES.length}:{" "}
+                  {auto.label}…
+                </p>
+                <Button
+                  size="sm"
+                  className="ml-auto"
+                  onClick={() => {
+                    cancelled.current = true;
+                  }}
+                  title="Stop here and run the remaining steps yourself"
+                >
+                  Skip the rest
+                </Button>
+              </div>
+              <div
+                className="mt-2.5 h-1 overflow-hidden rounded-full bg-ink-800"
+                role="progressbar"
+                aria-valuenow={auto.index + 1}
+                aria-valuemin={1}
+                aria-valuemax={AUTO_STAGES.length}
+              >
+                <div
+                  className="h-full rounded-full bg-violet-300 transition-all duration-500"
+                  style={{ width: `${((auto.index + 1) / AUTO_STAGES.length) * 100}%` }}
+                />
+              </div>
+              <p className="mt-2 text-[11px] leading-relaxed text-slate-muted">
+                This runs once, on first open. Everything arrives as a suggestion for you to
+                accept, edit or reject — nothing is added to the assessment until you say so.
+              </p>
+            </section>
+          )}
+
+          {autoStalled && !auto && (
+            <Callout tone="unknown" title="First-open analysis stopped early">
+              Some steps did not complete. You can resume, or just run whichever steps you need
+              from their own buttons.
+              <div className="mt-2.5">
+                <Button
+                  size="sm"
+                  onClick={() => void runAuto(envelope.case.stages_run)}
+                  busy={Boolean(auto)}
+                >
+                  Resume analysis
+                </Button>
+              </div>
+            </Callout>
+          )}
+
+          {note && !auto && (
             <Callout tone="ai" title="AI suggestion run complete">
               {note}. Nothing has been added to your assessment — review each item below.
             </Callout>
           )}
-          {error && (
+          {error && !auto && (
             <Callout tone="against" title="Problem">
               {error}
             </Callout>
           )}
 
+          {/* While the first-open run is in flight, every control reports busy
+              so the reviewer cannot fire a second suggestion on top of it. */}
           <Screen
             envelope={envelope}
             run={run}
             suggest={suggest}
-            busyKey={busyKey}
+            busyKey={auto ? `suggest-${AUTO_STAGES[auto.index]?.stage ?? "facts"}` : busyKey}
             active={active}
             onSelectSpan={setActive}
           />

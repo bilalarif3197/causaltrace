@@ -204,6 +204,7 @@ def create_case(body: CreateCaseBody) -> CaseEnvelope:
             comorbidities=body.comorbidities,
         ),
         demo_case_id=body.demo_case_id,
+        client=_client,
     )
     return workspace.envelope(doc)
 

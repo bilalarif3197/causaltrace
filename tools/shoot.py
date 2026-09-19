@@ -184,7 +184,7 @@ def main() -> int:
                 label = {
                     "evidence": "Evidence review",
                     "timeline": "Clinical timeline",
-                    "investigation": "Causality investigation",
+                    "investigation": "Investigation",
                     "hypotheses": "Competing causes",
                     "missing": "Missing evidence",
                     "naranjo": "Naranjo framework",

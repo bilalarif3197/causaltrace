@@ -123,21 +123,26 @@ Reviewer decisions persist to SQLite, so a review survives a restart and can be 
 ## Demo script
 
 1. Open `http://localhost:3000`, load **"TMP-SMX and acute liver injury"**, click **Start case review**.
-2. **Evidence** → *Extract evidence*. ~27 candidate facts arrive, all marked **AI suggested**. Note
-   the Naranjo chip in the header still reads **0** — nothing is evidence yet.
+2. The case analyses itself on first open — seven stages, about 40 seconds, with live progress
+   and a **Skip the rest** button. Every item arrives marked **AI suggested**, and the Naranjo
+   chip in the header still reads **0**: none of it is evidence yet. This runs once; reopening
+   the case will not repeat it, and each step keeps its own button for re-running on demand.
 3. Accept most, **edit** one, **reject** one. The AI's original value stays visible beside yours.
 4. Anything the verifier could not confirm is flagged **Needs review** with the reason shown.
-5. **Timeline** → *Build timeline*. Reorder an event, change one to *Approximate*; it is labelled
-   "timing uncertain" rather than given an invented date.
-6. **Investigation** → four dimensions answered separately. Note rechallenge is UNKNOWN, not a
-   negative — absence of a rechallenge is not evidence against causality.
+5. **Timeline** — reorder an event, change one to *Approximate*; it is labelled "timing
+   uncertain" rather than given an invented date.
+6. **Investigation** — four dimensions answered separately. Note rechallenge is UNKNOWN, not a
+   negative: absence of a rechallenge is not evidence against causality.
 7. **Competing causes** → the graph draws edges from *your* assessments; unassessed hypotheses
    stay faint. Set acetaminophen to *Weakly supported* and watch its edge change.
-8. **Missing evidence** → concrete gaps with why each matters. Mark one *Unavailable*.
+8. **Missing evidence** — concrete gaps with why each matters. Mark one *Unavailable*.
+   Re-running this after review is better, since it then sees what you actually confirmed.
 9. **Naranjo** → each item shows the AI's suggestion beside your answer. Accept all, then
    **change one answer and the score updates instantly** — pure Python, no model call.
-10. **Conclusion** → choose your assessment, draft the rationale (built only from what you
-    confirmed), edit it, sign off.
+10. **Conclusion** → choose your assessment, then draft the rationale. This is the one stage
+    that never auto-runs: it writes from reviewer-confirmed evidence and fills the conclusion
+    field, so letting it run before you had reviewed anything would put machine text into your
+    conclusion. Edit it freely, then sign off.
 11. **Report** → timeline, evidence, alternatives, gaps, frameworks, your conclusion, and the
     **AI assistance audit**: suggested vs accepted vs modified vs rejected, plus the correction rate.
 

@@ -260,6 +260,34 @@ def test_bulk_accept_leaves_explicit_decisions_alone():
     assert doc.facts[1].reviewer_status is ReviewerStatus.REJECTED, "must not reverse a decision"
 
 
+def test_new_case_records_the_provider_immediately():
+    """A fresh case must not report 'mock' while a live run is in progress --
+    the header shows this, and it read as though the app were offline."""
+
+    class FakeClient:
+        mode = "live"
+        name = "some-model @ https://example.invalid"
+
+    doc = workspace.create_case(
+        narrative="x", suspected_drug="D", adverse_event="E", client=FakeClient()
+    )
+    assert doc.mode == "live"
+    assert doc.model_used == "some-model @ https://example.invalid"
+    # And it survives the round trip, since the UI reads it from the store.
+    assert store.get_case(doc.id).mode == "live"
+
+
+def test_new_case_defaults_to_mock_without_a_client():
+    doc = workspace.create_case(narrative="x", suspected_drug="D", adverse_event="E")
+    assert doc.mode == "mock"
+
+
+def test_a_new_case_has_run_no_stages():
+    """The frontend keys first-open auto-analysis off an empty stages_run."""
+    doc = workspace.create_case(narrative="x", suspected_drug="D", adverse_event="E")
+    assert doc.stages_run == []
+
+
 def test_reviewer_added_fact_is_confirmed_and_has_no_ai_suggestion():
     doc = workspace.create_case(narrative="x", suspected_drug="D", adverse_event="E")
     doc, fact = workspace.add_fact(doc, field="alcohol", value="No alcohol use reported")

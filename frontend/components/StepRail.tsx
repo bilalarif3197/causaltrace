@@ -6,7 +6,7 @@ import { CheckIcon } from "./ui";
 export const STEPS = [
   { id: "evidence", label: "Evidence review", short: "Evidence" },
   { id: "timeline", label: "Clinical timeline", short: "Timeline" },
-  { id: "investigation", label: "Causality investigation", short: "Investigation" },
+  { id: "investigation", label: "Investigation", short: "Investigation" },
   { id: "hypotheses", label: "Competing causes", short: "Causes" },
   { id: "missing", label: "Missing evidence", short: "Gaps" },
   { id: "naranjo", label: "Naranjo framework", short: "Naranjo" },

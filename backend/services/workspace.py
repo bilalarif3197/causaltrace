@@ -116,6 +116,7 @@ def create_case(
     title: str = "",
     patient: PatientContext | None = None,
     demo_case_id: str | None = None,
+    client=None,
 ) -> CaseDocument:
     doc = CaseDocument(
         id=store.new_case_id(),
@@ -126,6 +127,11 @@ def create_case(
         patient=patient or PatientContext(),
         demo_case_id=demo_case_id,
         naranjo=blank_naranjo_items(),
+        # Record the provider up front. Otherwise a brand-new case reports the
+        # default "mock" in the UI until the first stage happens to finish,
+        # which reads as though a live run were offline.
+        mode=getattr(client, "mode", "mock") if client else "mock",
+        model_used=getattr(client, "name", None) if client else None,
     )
     store.save_case(doc)
     store.log(

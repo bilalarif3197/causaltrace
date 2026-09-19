@@ -116,6 +116,7 @@ export default function EvidenceReview({
 }: StepProps) {
   const { case: doc, stats } = envelope;
   const [adding, setAdding] = useState<FactSection | null>(null);
+  const extracting = busyKey === "suggest-facts";
 
   const bySection = (section: FactSection) => doc.facts.filter((f) => f.section === section);
 
@@ -156,8 +157,9 @@ export default function EvidenceReview({
       >
         {doc.facts.length === 0 ? (
           <EmptyState>
-            No facts extracted yet. Run the extraction to get candidate facts, then accept, edit
-            or reject each one. You can also add facts the AI missed.
+            {extracting
+              ? "Reading the narrative and pulling out candidate facts…"
+              : "No facts extracted yet. Run the extraction to get candidate facts, then accept, edit or reject each one. You can also add facts the AI missed."}
           </EmptyState>
         ) : (
           <div className="flex flex-wrap gap-2">
@@ -211,7 +213,9 @@ export default function EvidenceReview({
 
             {facts.length === 0 ? (
               <p className="mt-2 text-[12.5px] italic text-slate-muted">
-                Nothing extracted for this section. If the narrative covers it, add it manually.
+                {extracting
+                  ? "Extracting…"
+                  : "Nothing extracted for this section. If the narrative covers it, add it manually."}
               </p>
             ) : (
               <ul className="mt-3 space-y-2">
