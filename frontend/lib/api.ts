@@ -84,6 +84,7 @@ export type SuggestStage =
   | "missing"
   | "naranjo"
   | "who_umc"
+  | "rucam"
   | "rationale";
 
 export const runSuggest = (id: string, stage: SuggestStage) =>
@@ -105,6 +106,32 @@ export const runSuggestBatch = (id: string, stages?: SuggestStage[]) =>
     stages: string[];
     failed: Record<string, string>;
   }>(`/api/cases/${id}/suggest-batch`, { stages: stages ?? null });
+
+export interface RucamCategory {
+  key: string;
+  number: number;
+  title: string;
+  question: string;
+  note: string;
+  options: {
+    key: string;
+    label: string;
+    points: Record<string, number>;
+    blocks_scoring: string | null;
+  }[];
+}
+
+/** Served by the backend so the UI never duplicates the weight table. */
+export const getRucamCategories = () => request<RucamCategory[]>("/api/rucam-categories");
+
+export const setRucamLabs = (
+  id: string,
+  body: { alt?: number | null; alt_uln?: number | null; alp?: number | null; alp_uln?: number | null },
+) =>
+  request<CaseEnvelope>(`/api/cases/${id}/rucam-labs`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
 
 /** Retrieve the FDA label as citable evidence for Naranjo item 1. */
 export const lookupLabel = (id: string) =>

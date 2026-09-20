@@ -36,10 +36,13 @@ from schemas.review import (
     Origin,
     PatientContext,
     ReviewerStatus,
+    RucamAnswer,
+    RucamAssessment,
     TimelineEntry,
     Verdict,
     utcnow,
 )
+from services import rucam as rucam_service
 from services import store, suggest
 from services.assessment import (
     blank_naranjo_items,
@@ -60,6 +63,7 @@ DISCLAIMER = (
 PARALLEL_STAGES = ("facts", "timeline", "dimensions", "hypotheses", "naranjo", "who_umc")
 
 SUGGEST_STAGES = (
+    "rucam",
     "facts",
     "timeline",
     "dimensions",
@@ -85,6 +89,7 @@ class WorkspaceError(RuntimeError):
 def envelope(doc: CaseDocument) -> CaseEnvelope:
     """Document plus everything derived from it, recomputed fresh."""
     framework = score_framework(doc.naranjo) if doc.naranjo else None
+    ensure_rucam(doc)  # cheap, deterministic, and must not go stale
     return CaseEnvelope(
         case=doc,
         stats=compute_stats(doc),
@@ -177,6 +182,8 @@ def _compute(client, doc: CaseDocument, stage: str):
         return suggest.suggest_naranjo(client, doc)
     if stage == "who_umc":
         return suggest.suggest_who_umc(client, doc)
+    if stage == "rucam":
+        return suggest.suggest_rucam(client, doc, rucam_service.CATEGORIES)
     if stage == "rationale":
         return suggest.draft_rationale(client, doc, framework_summary(doc))
     raise WorkspaceError(f"Unknown stage '{stage}'. Expected one of {', '.join(SUGGEST_STAGES)}.")
@@ -271,6 +278,29 @@ def _merge(doc: CaseDocument, stage: str, result) -> str:
             doc.who_umc = incoming
         note = f"Suggested WHO-UMC category: {incoming.ai_classification}"
 
+    elif stage == "rucam":
+        assessment = ensure_rucam(doc)
+        if not assessment.applicable:
+            return "RUCAM does not apply to this event; nothing suggested"
+        suggestions = result
+        changed = 0
+        for answer in assessment.answers:
+            row = suggestions.get(answer.category)
+            if not row:
+                continue
+            category = rucam_service.CATEGORIES_BY_KEY[answer.category]
+            option = row.get("option")
+            if category.option(option) is None:
+                continue  # model invented an option; drop it rather than coerce
+            answer.ai_answer = option
+            answer.ai = _suggestion_for(doc, option, row.get("evidence_text"), row.get("rationale", ""))
+            # Never overwrite an answer the reviewer has given.
+            if answer.reviewer_status in (ReviewerStatus.AI_SUGGESTED, ReviewerStatus.NEEDS_REVIEW):
+                answer.reviewer_status = ReviewerStatus.AI_SUGGESTED
+                changed += 1
+        ensure_rucam(doc)
+        note = f"Suggested answers for {changed} unreviewed RUCAM categor{'y' if changed == 1 else 'ies'}"
+
     elif stage == "rationale":
         text = result
         doc.conclusion.ai_draft_rationale = text
@@ -360,6 +390,96 @@ def run_suggest_batch(
         after={"stages": list(results), "failed": errors, "model": doc.model_used},
     )
     return doc, notes, errors
+
+
+def _suggestion_for(doc: CaseDocument, value, quote: str | None, rationale: str) -> AiSuggestion:
+    """AiSuggestion with the quote checked against the narrative."""
+    from services.spans import locate_span
+
+    span = locate_span(doc.narrative, quote) if quote else None
+    suggestion = AiSuggestion(
+        value=None if value is None else str(value),
+        evidence_text=quote,
+        span=span,
+        rationale=rationale,
+    )
+    if quote and (span is None or not span.located):
+        suggestion.verification = Verdict.NOT_SUPPORTED
+        suggestion.verification_reason = "Cited text does not appear in the narrative."
+    return suggestion
+
+
+def ensure_rucam(doc: CaseDocument) -> RucamAssessment:
+    """Create the RUCAM structure if the event is hepatic, and refresh it.
+
+    RUCAM is liver-specific, so it is marked not applicable rather than offered
+    for, say, a cutaneous reaction. Kept in sync on every read, like Naranjo.
+    """
+    if doc.rucam is None:
+        hepatic = rucam_service.is_hepatic_event(doc.adverse_event)
+        doc.rucam = RucamAssessment(
+            applicable=hepatic,
+            not_applicable_reason=(
+                None
+                if hepatic
+                else (
+                    f"RUCAM assesses drug-induced liver injury. '{doc.adverse_event}' is not a "
+                    "hepatic event, so RUCAM does not apply; use Naranjo and WHO-UMC instead."
+                )
+            ),
+            answers=[
+                RucamAnswer(category=c.key, title=c.title) for c in rucam_service.CATEGORIES
+            ],
+            citation=rucam_service.MANUAL_CITATION,
+        )
+
+    assessment = doc.rucam
+    labs = assessment.labs
+    assessment.r_ratio = rucam_service.r_ratio(
+        labs.alt or 0, labs.alt_uln or 0, labs.alp or 0, labs.alp_uln or 0
+    )
+    assessment.pattern = rucam_service.pattern_from_r(assessment.r_ratio)
+
+    # Reviewer answers only, exactly as for Naranjo.
+    answers = {
+        a.category: a.reviewer_answer
+        for a in assessment.answers
+        if a.reviewer_answer and a.reviewer_status in CONFIRMED_STATUSES
+    }
+    result = rucam_service.score(answers, assessment.pattern)  # type: ignore[arg-type]
+
+    for answer in assessment.answers:
+        answer.score = result["per_category"].get(answer.category, 0)
+    assessment.total = result["total"]
+    assessment.classification = result["classification"]
+    assessment.calculable = result["calculable"]
+    assessment.blocking_reasons = result["blocking_reasons"]
+    assessment.unanswered = result["unanswered"]
+    return assessment
+
+
+def set_rucam_labs(doc: CaseDocument, **values) -> CaseDocument:
+    assessment = ensure_rucam(doc)
+    before = assessment.labs.model_dump()
+    for field in ("alt", "alt_uln", "alp", "alp_uln"):
+        if field in values and values[field] is not None:
+            setattr(assessment.labs, field, float(values[field]))
+    ensure_rucam(doc)
+    store.save_case(doc)
+    store.log(
+        doc.id,
+        actor=Origin.REVIEWER,
+        action="RUCAM_LABS",
+        entity_type="rucam",
+        summary=(
+            f"Liver values set; R = {assessment.r_ratio} -> {assessment.pattern.lower()} pattern"
+            if assessment.r_ratio
+            else "Liver values updated; pattern still undetermined"
+        ),
+        before=before,
+        after=assessment.labs.model_dump(),
+    )
+    return doc
 
 
 def lookup_label_evidence(client, doc: CaseDocument) -> tuple[CaseDocument, str]:
@@ -598,6 +718,38 @@ def apply_review(
         score_framework(doc.naranjo)  # instant deterministic recompute
         after = {"answer": target.reviewer_answer.value, "status": target.reviewer_status.value, "score": target.score}
         summary = f"Naranjo item {number} answered {target.reviewer_answer.value} ({target.score:+d})"
+
+    elif entity_type == "rucam":
+        assessment = ensure_rucam(doc)
+        target = next((a for a in assessment.answers if a.category == entity_id), None)
+        if not target:
+            raise WorkspaceError(
+                f"No RUCAM category '{entity_id}'. Expected one of "
+                + ", ".join(c.key for c in rucam_service.CATEGORIES)
+            )
+        category = rucam_service.CATEGORIES_BY_KEY[entity_id]
+        before = {"answer": target.reviewer_answer, "score": target.score}
+        if value is not None:
+            if category.option(value) is None:
+                raise WorkspaceError(
+                    f"'{value}' is not a valid option for RUCAM '{entity_id}'. Options: "
+                    + ", ".join(o.key for o in category.options)
+                )
+            target.reviewer_answer = value
+        if status:
+            target.reviewer_status = status
+        else:
+            target.reviewer_status = (
+                ReviewerStatus.ACCEPTED
+                if target.ai_answer and target.reviewer_answer == target.ai_answer
+                else ReviewerStatus.MODIFIED
+            )
+        if note is not None:
+            target.reviewer_note = note
+        target.reviewed_at = utcnow()
+        ensure_rucam(doc)  # instant deterministic recompute
+        after = {"answer": target.reviewer_answer, "score": target.score}
+        summary = f"RUCAM '{category.title}' answered {target.reviewer_answer} ({target.score:+d})"
 
     elif entity_type == "missing":
         target = doc.find_missing(entity_id)

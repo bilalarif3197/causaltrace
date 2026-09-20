@@ -261,6 +261,54 @@ def run_suggest_batch(case_id: str, body: BatchBody) -> BatchResponse:
     )
 
 
+class RucamLabsBody(BaseModel):
+    alt: Optional[float] = None
+    alt_uln: Optional[float] = None
+    alp: Optional[float] = None
+    alp_uln: Optional[float] = None
+
+
+@app.put("/api/cases/{case_id}/rucam-labs", response_model=CaseEnvelope)
+def set_rucam_labs(case_id: str, body: RucamLabsBody) -> CaseEnvelope:
+    """Set ALT and ALP with their upper limits, which fix the injury pattern.
+
+    RUCAM cannot be applied without this: its first three categories score
+    differently for hepatocellular versus cholestatic or mixed injury.
+    """
+    doc = _load(case_id)
+    try:
+        doc = workspace.set_rucam_labs(doc, **body.model_dump())
+    except (WorkspaceError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return workspace.envelope(doc)
+
+
+@app.get("/api/rucam-categories")
+def rucam_categories() -> list[dict]:
+    """The RUCAM question set, so the UI does not duplicate the weight table."""
+    from services import rucam as rucam_service
+
+    return [
+        {
+            "key": category.key,
+            "number": category.number,
+            "title": category.title,
+            "question": category.question,
+            "note": category.note,
+            "options": [
+                {
+                    "key": option.key,
+                    "label": option.label,
+                    "points": option.points,
+                    "blocks_scoring": option.blocks_scoring,
+                }
+                for option in category.options
+            ],
+        }
+        for category in rucam_service.CATEGORIES
+    ]
+
+
 @app.post("/api/cases/{case_id}/label-lookup", response_model=SuggestResponse)
 def label_lookup(case_id: str) -> SuggestResponse:
     """Retrieve the FDA label as citable evidence for Naranjo item 1.

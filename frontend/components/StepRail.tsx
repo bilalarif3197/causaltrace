@@ -10,6 +10,7 @@ export const STEPS = [
   { id: "hypotheses", label: "Competing causes", short: "Causes" },
   { id: "missing", label: "Missing evidence", short: "Gaps" },
   { id: "naranjo", label: "Naranjo framework", short: "Naranjo" },
+  { id: "rucam", label: "RUCAM (liver)", short: "RUCAM" },
   { id: "whoumc", label: "WHO-UMC", short: "WHO-UMC" },
   { id: "conclusion", label: "Reviewer conclusion", short: "Conclusion" },
   { id: "report", label: "Case report", short: "Report" },
@@ -33,6 +34,12 @@ function pending(env: CaseEnvelope, step: StepId): number {
       return s.missing_open;
     case "naranjo":
       return s.naranjo_pending;
+    case "rucam": {
+      // Not applicable to non-hepatic events, so nothing is owed.
+      const r = env.case.rucam;
+      if (!r || !r.applicable) return 0;
+      return r.answers.filter((a) => !a.reviewer_status.startsWith("REVIEWER")).length;
+    }
     case "whoumc":
       return env.case.who_umc && !env.case.who_umc.reviewer_classification ? 1 : 0;
     case "conclusion":
@@ -57,6 +64,8 @@ function started(env: CaseEnvelope, step: StepId): boolean {
       return c.missing_evidence.length > 0;
     case "naranjo":
       return c.naranjo.some((i) => i.ai_answer !== null || i.reviewer_status.startsWith("REVIEWER"));
+    case "rucam":
+      return !c.rucam?.applicable || c.rucam.answers.some((a) => a.reviewer_status.startsWith("REVIEWER"));
     case "whoumc":
       return c.who_umc !== null;
     case "conclusion":

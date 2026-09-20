@@ -443,6 +443,55 @@ class WhoUmcReview(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# RUCAM -- the hepatotoxicity-specific framework
+# ---------------------------------------------------------------------------
+
+
+class RucamAnswer(BaseModel):
+    """One RUCAM category. Same dual-value discipline as everything else."""
+
+    category: str
+    title: str = ""
+    ai_answer: Optional[str] = None
+    ai: Optional[AiSuggestion] = None
+    reviewer_answer: Optional[str] = None
+    reviewer_status: ReviewerStatus = ReviewerStatus.AI_SUGGESTED
+    reviewer_note: Optional[str] = None
+    score: int = 0
+    reviewed_at: Optional[str] = None
+
+
+class RucamLabs(BaseModel):
+    """Values needed for the R ratio, which decides the injury pattern.
+
+    Without these RUCAM cannot be applied: its first three categories are
+    scored differently for hepatocellular versus cholestatic/mixed injury.
+    """
+
+    alt: Optional[float] = None
+    alt_uln: Optional[float] = 40.0
+    alp: Optional[float] = None
+    alp_uln: Optional[float] = 120.0
+    source: str = "reviewer"
+
+
+class RucamAssessment(BaseModel):
+    applicable: bool = True
+    not_applicable_reason: Optional[str] = None
+    labs: RucamLabs = Field(default_factory=RucamLabs)
+    r_ratio: Optional[float] = None
+    pattern: str = "UNKNOWN"
+    answers: list[RucamAnswer] = Field(default_factory=list)
+    #: None when the manual says a RUCAM must not be produced.
+    total: Optional[int] = None
+    classification: Optional[str] = None
+    calculable: bool = False
+    blocking_reasons: list[str] = Field(default_factory=list)
+    unanswered: list[str] = Field(default_factory=list)
+    citation: str = ""
+
+
+# ---------------------------------------------------------------------------
 # Screen 9 -- reviewer conclusion
 # ---------------------------------------------------------------------------
 
@@ -520,6 +569,7 @@ class CaseDocument(BaseModel):
     naranjo: list[NaranjoReviewItem] = Field(default_factory=list)
     who_umc: Optional[WhoUmcReview] = None
     label_evidence: Optional[LabelEvidence] = None
+    rucam: Optional[RucamAssessment] = None
     conclusion: Conclusion = Field(default_factory=Conclusion)
 
     #: Which suggest steps have been run, so the UI can prompt correctly.

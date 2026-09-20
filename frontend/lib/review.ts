@@ -203,6 +203,34 @@ export interface WhoUmcReview {
   reviewed_at: string | null;
 }
 
+export interface RucamAnswer {
+  category: string;
+  title: string;
+  ai_answer: string | null;
+  ai: AiSuggestion | null;
+  reviewer_answer: string | null;
+  reviewer_status: ReviewerStatus;
+  reviewer_note: string | null;
+  score: number;
+  reviewed_at: string | null;
+}
+
+export interface RucamAssessment {
+  applicable: boolean;
+  not_applicable_reason: string | null;
+  labs: { alt: number | null; alt_uln: number | null; alp: number | null; alp_uln: number | null };
+  r_ratio: number | null;
+  pattern: "HEPATOCELLULAR" | "CHOLESTATIC" | "MIXED" | "UNKNOWN";
+  answers: RucamAnswer[];
+  /** null when the manual says a RUCAM must not be produced. */
+  total: number | null;
+  classification: string | null;
+  calculable: boolean;
+  blocking_reasons: string[];
+  unanswered: string[];
+  citation: string;
+}
+
 export interface Conclusion {
   final_assessment: string | null;
   primary_cause_hypothesis_id: string | null;
@@ -239,6 +267,7 @@ export interface CaseDocument {
   naranjo: NaranjoReviewItem[];
   who_umc: WhoUmcReview | null;
   label_evidence: LabelEvidence | null;
+  rucam: RucamAssessment | null;
   conclusion: Conclusion;
   stages_run: string[];
   model_used: string | null;

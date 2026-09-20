@@ -14,6 +14,7 @@ import Investigation from "@/components/steps/Investigation";
 import Hypotheses from "@/components/steps/Hypotheses";
 import MissingEvidence from "@/components/steps/MissingEvidence";
 import NaranjoReview from "@/components/steps/NaranjoReview";
+import Rucam from "@/components/steps/Rucam";
 import WhoUmc from "@/components/steps/WhoUmc";
 import Conclusion from "@/components/steps/Conclusion";
 import Report from "@/components/steps/Report";
@@ -51,6 +52,7 @@ const SCREENS: Record<StepId, (p: StepProps) => React.ReactNode> = {
   hypotheses: Hypotheses,
   missing: MissingEvidence,
   naranjo: NaranjoReview,
+  rucam: Rucam,
   whoumc: WhoUmc,
   conclusion: Conclusion,
   report: Report,

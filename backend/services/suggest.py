@@ -661,6 +661,76 @@ def suggest_who_umc(client, doc: CaseDocument) -> WhoUmcReview:
 
 
 # ---------------------------------------------------------------------------
+# RUCAM category suggestions
+# ---------------------------------------------------------------------------
+
+RUCAM_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "answers": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "category": {"type": "string"},
+                    "option": {"type": "string", "description": "One of the option keys offered."},
+                    "rationale": {"type": "string"},
+                    "evidence_text": {"type": ["string", "null"]},
+                },
+            },
+        }
+    },
+}
+
+RUCAM_SYSTEM = """You suggest answers to the RUCAM categories for drug-induced liver injury, so a
+reviewer can confirm or correct each one.
+
+Choose only from the option keys given for each category, and quote the narrative verbatim
+for any answer that is not an "unknown" or "not reported" option.
+
+Rules that matter more here than elsewhere:
+- If the narrative does not state a time to onset, choose the "unknown" option. RUCAM is
+  explicitly not calculable without it, and that is the correct outcome, not a failure.
+- "Not re-exposed" is the honest answer for readministration in almost every published case.
+  Never choose a negative-rechallenge option unless the patient was actually re-exposed and
+  the enzymes did not rise.
+- For non-drug causes, count only causes the narrative says were actually investigated.
+  Tests that were never performed are not exclusions.
+- Do not compute a total and do not state a RUCAM category. You answer items only."""
+
+
+def suggest_rucam(client, doc: CaseDocument, categories) -> dict[str, dict[str, Any]]:
+    """Per-category suggestions, keyed by category. Never a total."""
+    blocks: list[str] = []
+    for category in categories:
+        options = "\n".join(f"      {o.key}: {o.label}" for o in category.options)
+        blocks.append(f"  [{category.key}] {category.question}\n{options}")
+
+    raw = client.complete_json(
+        stage="rucam",
+        system=RUCAM_SYSTEM,
+        user=(
+            f'{_case_header(doc)}\n\nNARRATIVE:\n"""\n{doc.narrative}\n"""\n\n'
+            f"Answer each RUCAM category using its option key:\n\n" + "\n\n".join(blocks)
+        ),
+        schema=RUCAM_SCHEMA,
+        schema_name="rucam_answers",
+        case_id=doc.demo_case_id,
+    )
+
+    out: dict[str, dict[str, Any]] = {}
+    for row in raw.get("answers", []):
+        key = row.get("category")
+        if key:
+            out[key] = {
+                "option": row.get("option"),
+                "rationale": row.get("rationale", ""),
+                "evidence_text": row.get("evidence_text"),
+            }
+    return out
+
+
+# ---------------------------------------------------------------------------
 # lookup_known_reaction()  -- retrieval-grounded, for Naranjo item 1
 # ---------------------------------------------------------------------------
 
