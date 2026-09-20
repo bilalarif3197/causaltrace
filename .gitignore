@@ -40,3 +40,7 @@ tools/shots/
 
 # Cached openFDA label responses.
 backend/.openfda_cache/
+
+# LiverTox request cache. The harvested cases themselves ARE committed:
+# LiverTox text is not copyright protected, unlike the PMC NC/ND articles.
+evaluation/.livertox_cache/
