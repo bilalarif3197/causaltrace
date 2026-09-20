@@ -19,7 +19,7 @@ the three built-in cases work. A custom narrative returns 422 by design, not by 
 ## Verify (run all four before calling anything done)
 
 ```bash
-cd backend && .venv/bin/python -m pytest -q          # 147 tests
+cd backend && .venv/bin/python -m pytest -q          # 196 tests
 cd backend && .venv/bin/python validate_fixtures.py  # 136 quotes must be verbatim
 cd frontend && npx tsc --noEmit && npm run build
 backend/.venv/bin/python evaluation/evaluate_assistance.py
@@ -139,3 +139,39 @@ keeps the stages that worked.
 
 The client negotiates JSON mode once under a lock; concurrent callers wait for the answer
 rather than each probing.
+
+## External data sources
+
+| Script / module | Source | Licence rule |
+| --- | --- | --- |
+| `backend/services/openfda.py` | openFDA labels | public; cached in `.openfda_cache/` |
+| `evaluation/livertox_ingest.py` | LiverTox via E-utilities + OAI | not copyright protected; cases ARE committed |
+| `evaluation/ade_corpus_eval.py` | ADE Corpus V2 | licence "unknown"; cached, never committed |
+| `evaluation/pmc_ingest.py` | PMC Open Access | includes CC BY-NC-ND; pointers only |
+
+Never crawl the Bookshelf or PMC websites. Bookshelf prohibits it explicitly, and `efetch` does
+not serve Bookshelf body text at all — use the OAI service. All four scripts need
+`truststore.inject_into_ssl()`; without it TLS validation fails in a way that looks like a
+network outage.
+
+## The label lookup must not answer Naranjo item 1
+
+`lookup_label_evidence` supplies citable evidence and nothing more. A label listing a reaction
+is not a published case report, and absence from a label leaves item 1 UNKNOWN rather than NO.
+A parametrised test asserts the score stays 0 whichever way the lookup resolves.
+
+Confirm every openFDA hit against the label's own `openfda` names. A loose full-text search once
+returned an ophthalmic product for oral TMP-SMX and reported the reaction absent from the wrong
+medicine's label, which is worse than finding nothing.
+
+## RUCAM
+
+Weights come from NBK548272 and the manual's category ranges are asserted in
+`tests/test_rucam.py`. Two rules that must not be relaxed:
+
+1. **Scoring is pattern-dependent.** Without ALT and ALP (and their upper limits) there is no R
+   ratio, no pattern, and no valid RUCAM. Return not-calculable.
+2. **Refuse when the manual refuses.** Injury before exposure, onset too long after withdrawal,
+   or unknown onset all mean a RUCAM must not be produced. Never substitute a number.
+
+RUCAM is liver-specific and gated on `is_hepatic_event`.

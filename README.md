@@ -172,6 +172,8 @@ frontend/
   components/steps/        the nine review screens
 evaluation/
   evaluate_assistance.py   AI-assistance metrics (the relevant harness)
+  ade_corpus_eval.py       extraction vs human annotation with gold offsets
+  livertox_ingest.py       curated DILI cases (redistributable)
   evaluate.py              legacy verdict-accuracy comparison
   pmc_ingest.py            harvest real cases from the PMC Open Access Subset
 ```
@@ -191,6 +193,63 @@ mutates and saves the whole case document, so firing the per-stage endpoint six 
 parallel from the browser would let the last response win and discard the other five.
 Concurrency is confined to the model calls, which do not touch the document; merging happens
 on one thread in a fixed order, so the result does not depend on which call returned first.
+
+---
+
+## Data sources
+
+Four external sources, each used for a specific reason and each with its licensing handled.
+
+| Source | Used for | Licence handling |
+| --- | --- | --- |
+| **openFDA** drug labels | Naranjo item 1 and RUCAM category 6 cite the real label | Public API, responses cached locally |
+| **LiverTox** (NCBI/NIDDK) | Curated DILI case narratives and the RUCAM weight table | **Not copyright protected** — cases are committed |
+| **ADE Corpus V2** | Extraction recall and fabrication rate against human annotation | Licence recorded as "unknown", so cached and gitignored |
+| **PMC Open Access** | Published case reports with self-reported Naranjo scores | Includes CC BY-NC-ND, so only PMCID pointers are committed |
+
+### Naranjo item 1 no longer rests on model memory
+
+Item 1 asks whether there are previous conclusive reports of the reaction. That used to be
+answered from the model's own recollection — no source, no quote, nothing checkable, which is
+precisely the failure mode the rest of this project is built to prevent.
+
+`services/openfda.py` now retrieves the actual FDA label. Retrieval is deterministic; a separate
+pass decides whether the label covers the event and must quote the retrieved text verbatim, which
+is then checked by the same span locator used everywhere else. A fabricated quote is discarded
+and the finding downgraded to undetermined.
+
+It does **not** answer the item. A label listing a reaction makes prior reports likely, but a
+label is not a published case report. And absence from the label leaves item 1 **UNKNOWN, never
+NO** — a parametrised test asserts the score stays 0 whichever way the lookup goes.
+
+> A live run caught this citing the wrong medicine: asked about oral TMP-SMX the loose fallback
+> search returned an **ophthalmic** product and reported liver injury absent from "the label".
+> Every hit is now confirmed against the label's own names, the loose search is gone, and
+> combination products are searched in both ingredient orders — openFDA lists
+> trimethoprim-sulfamethoxazole as `SULFAMETHOXAZOLE AND TRIMETHOPRIM`.
+
+### RUCAM
+
+The hepatotoxicity-specific instrument, which the limitations section previously listed as a gap.
+Weights transcribed from the [RUCAM Manual of Operations](https://www.ncbi.nlm.nih.gov/books/NBK548272/)
+in LiverTox, with the manual's own category ranges asserted in tests.
+
+Two properties make it harder than Naranjo, and both are honesty features:
+
+- **Scoring depends on the injury pattern.** The first three categories score differently for
+  hepatocellular versus cholestatic/mixed injury, and the course category is narrower for
+  cholestatic/mixed (0 to +2, not −2 to +3). The pattern comes from the R ratio, so ALT and
+  alkaline phosphatase with their upper limits are required before the instrument applies.
+- **RUCAM is sometimes not calculable, and the manual says so.** Injury preceding exposure, or
+  onset more than 15 days (hepatocellular) or 30 days (cholestatic/mixed) after withdrawal, makes
+  the case "unrelated"; unknown time to onset makes it "insufficiently documented". CausalTrace
+  refuses to produce a number in those cases rather than returning a misleading one.
+
+It is also gated to hepatic events — offering a liver instrument for a maculopapular rash would
+be wrong.
+
+On the TMP-SMX case RUCAM assigns **−2 for the acetaminophen co-exposure**, which is exactly what
+it does that Naranjo cannot.
 
 ---
 
@@ -254,6 +313,33 @@ spans to trace, and nothing a reviewer can accept or reject piece by piece. That
 simulated — it needs a human to have actually disagreed. A rate near zero usually means the review
 was not adversarial enough, not that the AI was perfect.
 
+### Against human annotation, not my own labels
+
+```bash
+backend/.venv/bin/python evaluation/ade_corpus_eval.py --limit 10
+```
+
+ADE Corpus V2 provides 6,821 drug–adverse-effect relations annotated by two independent
+annotators, each with gold **character offsets** that line up with what the span locator produces.
+
+| Metric | Result |
+| --- | --- |
+| Adverse-event recall (span overlap) | 0.900 |
+| **Fabricated quotes** (not present in the source) | **0.000** |
+| Improvement misread as an adverse event | 0.000 |
+| Any finding pulled from a non-ADE sentence | 0.600 |
+
+Read the last two rows carefully, because conflating them would be misleading. **Fabricated
+quotes is the honest hallucination measure** — a quote either occurs in the source or it does not.
+The 0.600 is *not* an error rate: ADE Corpus labels whether a sentence asserts a *drug-caused*
+relation, while the extractor answers the broader question of what clinical facts the text
+contains. Extracting "hepatotoxicity" from *"Hepatotoxicity from green tea"* is correct behaviour
+against a different question.
+
+The harness did find a real bug. The extractor was reading *"an uneventful postoperative course"*
+and *"the viral load became undetectable"* as adverse events — an absence of harm and an
+improvement. The extraction prompt now excludes recoveries, and that rate went from 0.200 to zero.
+
 ### Read this before quoting any accuracy number
 
 Item accuracy and alternative-cause recall use **author-assigned labels on synthetic narratives**,
@@ -274,7 +360,7 @@ to 3/Possible — the same error the PMC harvester flags in published papers.
 ```bash
 cd backend
 .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/python -m pytest -q          # 147 tests
+.venv/bin/python -m pytest -q          # 196 tests
 .venv/bin/python validate_fixtures.py  # fixture quotes must be verbatim
 cd ../frontend && npx tsc --noEmit && npm run build
 ```
@@ -293,9 +379,14 @@ but rejects lookalikes such as `localhost.attacker.com`.
 - **Reviewer correction rate needs real reviewers.** One simulated session is not evidence.
 - **Single-drug assessment.** Naranjo applies to one suspected drug at a time; competing
   hypotheses are surfaced but not formally scored each.
-- **Naranjo is a poor instrument for hepatotoxicity specifically** — not weighted for
-  time-to-onset or recovery criteria, and it relies on drug levels rarely informative in
-  idiosyncratic DILI. RUCAM is better there and is not implemented.
+- **Naranjo remains a poor instrument for hepatotoxicity**, which is why RUCAM is implemented
+  alongside it. Naranjo is not weighted for time-to-onset or recovery criteria and relies on drug
+  levels rarely informative in idiosyncratic DILI. RUCAM addresses those, but only for liver
+  injury — there is no equivalent organ-specific instrument here for renal or cutaneous reactions,
+  where Naranjo's weaknesses still apply.
+- **The ADE Corpus benchmark is sentence-level.** It measures the extraction layer against human
+  annotation, which is a real improvement on my own labels, but says nothing about causality
+  reasoning over a full narrative.
 - **Global-negative items cannot be fully verified.** Each item cites one quote, but item 5
   answered NO is a claim about the whole narrative. The verifier judges item 5 against the full
   text as a workaround; the real fix is multi-quote citations.

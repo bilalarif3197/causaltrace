@@ -44,3 +44,7 @@ backend/.openfda_cache/
 # LiverTox request cache. The harvested cases themselves ARE committed:
 # LiverTox text is not copyright protected, unlike the PMC NC/ND articles.
 evaluation/.livertox_cache/
+
+# ADE Corpus V2 rows. Licence is recorded as "unknown", so cached not committed.
+evaluation/.ade_cache/
+evaluation/results/

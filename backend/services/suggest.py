@@ -125,6 +125,10 @@ Rules:
     Right: "Community-acquired pneumonia on chest radiograph."
 - Emit a SEPARATE entry per concomitant medication, per infection, per comorbidity and
   per lab abnormality. Do not bundle several into one value.
+- An improvement, a recovery, or the ABSENCE of a problem is never an adverse event.
+  "An uneventful postoperative course", "the viral load became undetectable" and
+  "liver tests normalised" describe the patient getting better. They may belong on the
+  timeline, but they must never be emitted as `event`, `symptoms` or `severity`.
 - Omit a field entirely if the narrative does not mention it. Do not emit placeholder
   entries -- the workspace already shows the reviewer which fields were never filled.
 - Never infer from clinical knowledge what is typical for the drug or condition."""
