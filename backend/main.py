@@ -261,6 +261,21 @@ def run_suggest_batch(case_id: str, body: BatchBody) -> BatchResponse:
     )
 
 
+@app.post("/api/cases/{case_id}/label-lookup", response_model=SuggestResponse)
+def label_lookup(case_id: str) -> SuggestResponse:
+    """Retrieve the FDA label as citable evidence for Naranjo item 1.
+
+    Does not answer the item. It replaces a claim the model made from memory
+    with text the reviewer can read and check.
+    """
+    doc = _load(case_id)
+    try:
+        doc, note = workspace.lookup_label_evidence(_client, doc)
+    except MockUnavailable as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return SuggestResponse(envelope=workspace.envelope(doc), note=note, stage="label")
+
+
 @app.post("/api/cases/{case_id}/suggest/{stage}", response_model=SuggestResponse)
 def run_suggest(case_id: str, stage: str) -> SuggestResponse:
     doc = _load(case_id)

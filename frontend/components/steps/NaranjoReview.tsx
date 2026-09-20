@@ -1,7 +1,7 @@
 "use client";
 
 import * as api from "@/lib/api";
-import type { Answer, FrameworkResult } from "@/lib/review";
+import type { Answer, FrameworkResult, LabelEvidence } from "@/lib/review";
 import { AiIcon, Button, Callout, Panel, Pill } from "../ui";
 import { SourceQuote, StatusChip } from "../review";
 import type { StepProps } from "./types";
@@ -63,6 +63,102 @@ function ScoreScale({ result }: { result: FrameworkResult }) {
 }
 
 const ANSWERS: Answer[] = ["YES", "NO", "UNKNOWN"];
+
+/**
+ * Evidence for item 1, retrieved from the actual FDA label.
+ *
+ * Before this existed, item 1 ("previous conclusive reports") was answered
+ * from the model's own memory with no source. The panel is careful about what
+ * the label does and does not license, and it never fills the answer in.
+ */
+function LabelEvidencePanel({
+  evidence,
+  onLookup,
+  busy,
+}: {
+  evidence: LabelEvidence | null;
+  onLookup: () => void;
+  busy: boolean;
+}) {
+  const verdict =
+    evidence == null || !evidence.label_found
+      ? null
+      : evidence.mentions_event === true
+        ? { tone: "support" as const, text: "This reaction appears on the label" }
+        : evidence.mentions_event === false
+          ? { tone: "unknown" as const, text: "Not listed on this label" }
+          : { tone: "unknown" as const, text: "Label retrieved; coverage unclear" };
+
+  return (
+    <Panel
+      title="Known-reaction evidence"
+      subtitle="Item 1 asks about previous conclusive reports. This retrieves the current FDA label so your answer can cite text rather than recollection."
+      aside={
+        <Button size="sm" busy={busy} onClick={onLookup}>
+          {evidence ? "Re-check label" : "Look up FDA label"}
+        </Button>
+      }
+    >
+      {!evidence ? (
+        <p className="text-[12.5px] leading-relaxed text-slate-muted">
+          Not looked up yet. Without it, item 1 rests on the model&rsquo;s own memory — which is
+          exactly the kind of unverifiable claim this workspace is built to avoid.
+        </p>
+      ) : !evidence.label_found ? (
+        <Callout tone="unknown" title="No label available">
+          {evidence.unavailable_reason}
+        </Callout>
+      ) : (
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {verdict && <Pill tone={verdict.tone}>{verdict.text}</Pill>}
+            {evidence.citation.generic_names?.[0] && (
+              <Pill tone="neutral">{evidence.citation.generic_names[0]}</Pill>
+            )}
+            {evidence.citation.effective_time && (
+              <span className="font-mono text-[10.5px] text-slate-muted">
+                label rev. {evidence.citation.effective_time}
+              </span>
+            )}
+          </div>
+
+          {evidence.quote && (
+            <blockquote className="rounded-lg border-l-2 border-support-400/60 bg-ink-850/60 px-3 py-2">
+              <p className="font-mono text-[12px] leading-relaxed text-slate-soft">
+                &ldquo;{evidence.quote}&rdquo;
+              </p>
+              <footer className="mt-1.5 text-[10.5px] text-slate-muted">
+                {evidence.section ? `${evidence.section} section` : "FDA label"}
+                {evidence.span?.locator === "exact" && " · verbatim match confirmed"}
+                {evidence.citation.url && (
+                  <>
+                    {" · "}
+                    <a
+                      href={evidence.citation.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent-400 underline underline-offset-2"
+                    >
+                      view label on DailyMed
+                    </a>
+                  </>
+                )}
+              </footer>
+            </blockquote>
+          )}
+
+          {evidence.reasoning && (
+            <p className="text-[11.5px] leading-relaxed text-slate-muted">{evidence.reasoning}</p>
+          )}
+
+          <Callout tone="ai" title="What this does and does not establish">
+            {evidence.CAVEAT}
+          </Callout>
+        </div>
+      )}
+    </Panel>
+  );
+}
 
 export default function NaranjoReview({
   envelope,
@@ -156,6 +252,12 @@ export default function NaranjoReview({
         </div>
       </Panel>
 
+      <LabelEvidencePanel
+        evidence={doc.label_evidence}
+        busy={busyKey === "label"}
+        onLookup={() => run("label", async () => (await api.lookupLabel(doc.id)).envelope)}
+      />
+
       <Panel title="Items" bodyClassName="p-0">
         <ul className="divide-y divide-ink-800/70">
           {doc.naranjo.map((item) => {
@@ -171,6 +273,16 @@ export default function NaranjoReview({
                   </span>
                   <div className="min-w-[14rem] flex-1">
                     <p className="text-[12.5px] leading-snug text-slate-soft">{item.question}</p>
+                    {item.number === 1 && doc.label_evidence?.label_found && (
+                      <p className="mt-1 text-[11px] text-support-400">
+                        See the FDA label evidence above
+                        {doc.label_evidence.mentions_event === true
+                          ? " — this reaction is described on the label."
+                          : doc.label_evidence.mentions_event === false
+                            ? " — not listed there, which leaves this UNKNOWN rather than NO."
+                            : "."}
+                      </p>
+                    )}
                     {item.commonly_unknown && item.reviewer_answer === "UNKNOWN" && (
                       <p className="mt-0.5 text-[10.5px] text-slate-muted">
                         Unknown in &gt;85% of real cases

@@ -661,6 +661,63 @@ def suggest_who_umc(client, doc: CaseDocument) -> WhoUmcReview:
 
 
 # ---------------------------------------------------------------------------
+# lookup_known_reaction()  -- retrieval-grounded, for Naranjo item 1
+# ---------------------------------------------------------------------------
+
+LABEL_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "mentions_event": {
+            "type": ["boolean", "null"],
+            "description": "true if the label describes this reaction, false if not, null if unclear.",
+        },
+        "quote": {
+            "type": ["string", "null"],
+            "description": "Verbatim span copied from the label, or null.",
+        },
+        "section": {"type": ["string", "null"]},
+        "reasoning": {"type": "string"},
+    },
+}
+
+LABEL_SYSTEM = """You decide whether an approved product label describes a particular adverse
+reaction. You are given the label text; use nothing else.
+
+Clinical synonymy counts. "Fulminant hepatic necrosis", "hepatitis", "elevated transaminases"
+and "jaundice" all describe liver injury. "Agranulocytosis" does not.
+
+Rules:
+- `quote` must be copied character-for-character from the label text supplied. Never
+  paraphrase it, never tidy the capitalisation, and never quote anything not in the text.
+- Quote the most specific sentence that names the reaction, not the section heading.
+- Set mentions_event false only when you have read the label and the reaction is genuinely
+  absent. Use null if the label is too vague to tell.
+- Do not judge causality for this patient, and do not answer the Naranjo item. You are
+  retrieving evidence for a human to weigh."""
+
+
+def match_label_evidence(client, drug: str, adverse_event: str, text: str) -> dict[str, Any]:
+    """Ask whether the retrieved label text describes the event.
+
+    The model sees only the label, so its answer is grounded in retrieved text
+    rather than recalled from training. The caller then verifies the quote is
+    genuinely present.
+    """
+    raw = client.complete_json(
+        stage="label_match",
+        system=LABEL_SYSTEM,
+        user=(
+            f"Suspected drug: {drug}\nAdverse event to look for: {adverse_event}\n\n"
+            f'LABEL TEXT:\n"""\n{text}\n"""\n\n'
+            "Does this label describe that reaction?"
+        ),
+        schema=LABEL_SCHEMA,
+        schema_name="label_match",
+    )
+    return raw
+
+
+# ---------------------------------------------------------------------------
 # draft_reviewer_rationale()  -- new
 # ---------------------------------------------------------------------------
 

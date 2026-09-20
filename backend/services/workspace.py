@@ -30,6 +30,7 @@ from schemas.review import (
     Fact,
     FactSection,
     Hypothesis,
+    LabelEvidence,
     MissingEvidenceItem,
     MissingEvidenceStatus,
     Origin,
@@ -359,6 +360,90 @@ def run_suggest_batch(
         after={"stages": list(results), "failed": errors, "model": doc.model_used},
     )
     return doc, notes, errors
+
+
+def lookup_label_evidence(client, doc: CaseDocument) -> tuple[CaseDocument, str]:
+    """Retrieve the FDA label and record what it says about this reaction.
+
+    Deliberately does not touch any Naranjo answer. Item 1 stays the reviewer's
+    to answer; this only puts citable text in front of them where previously
+    there was only the model's recollection.
+    """
+    from services import openfda
+    from services.spans import locate_span
+
+    drug, event = doc.suspected_drug, doc.adverse_event
+
+    try:
+        record = openfda.fetch_label(drug)
+        text, sections = openfda.label_text(record)
+    except openfda.LabelUnavailable as exc:
+        doc.label_evidence = LabelEvidence(
+            queried_drug=drug,
+            adverse_event=event,
+            label_found=False,
+            unavailable_reason=str(exc),
+        )
+        note = f"No FDA label available for '{drug}'"
+        store.save_case(doc)
+        store.log(
+            doc.id,
+            actor=Origin.AI,
+            action="LABEL_LOOKUP",
+            entity_type="label_evidence",
+            summary=note,
+        )
+        return doc, note
+
+    raw = suggest.match_label_evidence(client, drug, event, text)
+    quote = raw.get("quote") or None
+    mentions = raw.get("mentions_event")
+
+    # Same grounding gate as everywhere else: a quote that is not in the
+    # retrieved label is a fabricated citation, so it is discarded and the
+    # finding downgraded to undetermined rather than shown as evidence.
+    span = locate_span(text, quote) if quote else None
+    if quote and (span is None or not span.located):
+        quote, span = None, None
+        mentions = None
+        raw["reasoning"] = (
+            (raw.get("reasoning") or "")
+            + " [Quote discarded: it does not appear in the retrieved label text.]"
+        ).strip()
+
+    doc.label_evidence = LabelEvidence(
+        queried_drug=drug,
+        adverse_event=event,
+        label_found=True,
+        mentions_event=mentions if isinstance(mentions, bool) else None,
+        quote=quote,
+        span=span,
+        section=raw.get("section"),
+        reasoning=raw.get("reasoning", ""),
+        label_text=text,
+        sections_included=sections,
+        citation=openfda.citation(record),
+    )
+
+    if doc.label_evidence.mentions_event is True:
+        note = f"FDA label for '{drug}' describes this reaction"
+    elif doc.label_evidence.mentions_event is False:
+        note = f"FDA label for '{drug}' does not list this reaction (item 1 stays UNKNOWN)"
+    else:
+        note = f"Retrieved the FDA label for '{drug}'; whether it covers this reaction is unclear"
+
+    if "label" not in doc.stages_run:
+        doc.stages_run.append("label")
+    store.save_case(doc)
+    store.log(
+        doc.id,
+        actor=Origin.AI,
+        action="LABEL_LOOKUP",
+        entity_type="label_evidence",
+        summary=note,
+        after={"mentions_event": doc.label_evidence.mentions_event, **doc.label_evidence.citation},
+    )
+    return doc, note
 
 
 def _renumber(events: list[TimelineEntry]) -> list[TimelineEntry]:

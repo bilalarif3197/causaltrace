@@ -165,6 +165,33 @@ export interface FrameworkResult {
   classification_is_stable: boolean;
 }
 
+export interface LabelEvidence {
+  queried_drug: string;
+  adverse_event: string;
+  label_found: boolean;
+  /** null means undetermined. false means "not on this label", never "no prior reports". */
+  mentions_event: boolean | null;
+  quote: string | null;
+  span: SourceSpan | null;
+  section: string | null;
+  reasoning: string;
+  label_text: string;
+  sections_included: string;
+  citation: {
+    label_id?: string | null;
+    set_id?: string | null;
+    effective_time?: string | null;
+    matched_by?: string | null;
+    brand_names?: string[];
+    generic_names?: string[];
+    manufacturer?: string | null;
+    url?: string | null;
+  };
+  unavailable_reason: string | null;
+  fetched_at: string;
+  CAVEAT: string;
+}
+
 export interface WhoUmcReview {
   ai_classification: string | null;
   ai_reasoning: string;
@@ -211,6 +238,7 @@ export interface CaseDocument {
   missing_evidence: MissingEvidenceItem[];
   naranjo: NaranjoReviewItem[];
   who_umc: WhoUmcReview | null;
+  label_evidence: LabelEvidence | null;
   conclusion: Conclusion;
   stages_run: string[];
   model_used: string | null;

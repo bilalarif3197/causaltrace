@@ -106,6 +106,12 @@ export const runSuggestBatch = (id: string, stages?: SuggestStage[]) =>
     failed: Record<string, string>;
   }>(`/api/cases/${id}/suggest-batch`, { stages: stages ?? null });
 
+/** Retrieve the FDA label as citable evidence for Naranjo item 1. */
+export const lookupLabel = (id: string) =>
+  post<{ envelope: CaseEnvelope; note: string; stage: string }>(
+    `/api/cases/${id}/label-lookup`,
+  );
+
 export const reviewEntity = (
   id: string,
   entityType: string,

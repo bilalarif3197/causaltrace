@@ -37,3 +37,6 @@ tools/shots/
 # disk for reference, never committed.
 *.docx
 *.pdf
+
+# Cached openFDA label responses.
+backend/.openfda_cache/

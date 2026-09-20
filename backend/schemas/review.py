@@ -393,6 +393,44 @@ WHO_UMC_CATEGORIES = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# Known-reaction evidence (Naranjo item 1)
+# ---------------------------------------------------------------------------
+
+
+class LabelEvidence(BaseModel):
+    """What the FDA label says about this reaction, with a citation.
+
+    Retrieved so Naranjo item 1 can point at text instead of resting on model
+    memory. `mentions_event` is None when undetermined, and a False must be
+    read as "not listed on this label" -- never as evidence that no prior
+    reports exist.
+    """
+
+    queried_drug: str
+    adverse_event: str
+    label_found: bool = False
+    mentions_event: Optional[bool] = None
+    quote: Optional[str] = None
+    span: Optional[SourceSpan] = None
+    section: Optional[str] = None
+    reasoning: str = ""
+    label_text: str = ""
+    sections_included: str = ""
+    citation: dict[str, Any] = Field(default_factory=dict)
+    unavailable_reason: Optional[str] = None
+    fetched_at: str = Field(default_factory=utcnow)
+
+    #: Shown verbatim in the UI. The inference this evidence does and does not
+    #: license, stated where a reviewer cannot miss it.
+    CAVEAT: str = (
+        "A reaction listed on a product label indicates that prior reports exist, because "
+        "labels are amended from post-marketing reports. The label is not itself a published "
+        "case report, so this is supporting evidence for Naranjo item 1 rather than an answer "
+        "to it. A reaction absent from the label leaves the item UNKNOWN, not NO."
+    )
+
+
 class WhoUmcReview(BaseModel):
     ai_classification: Optional[str] = None
     ai_reasoning: str = ""
@@ -481,6 +519,7 @@ class CaseDocument(BaseModel):
     missing_evidence: list[MissingEvidenceItem] = Field(default_factory=list)
     naranjo: list[NaranjoReviewItem] = Field(default_factory=list)
     who_umc: Optional[WhoUmcReview] = None
+    label_evidence: Optional[LabelEvidence] = None
     conclusion: Conclusion = Field(default_factory=Conclusion)
 
     #: Which suggest steps have been run, so the UI can prompt correctly.
