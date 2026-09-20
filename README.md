@@ -123,8 +123,9 @@ Reviewer decisions persist to SQLite, so a review survives a restart and can be 
 ## Demo script
 
 1. Open `http://localhost:3000`, load **"TMP-SMX and acute liver injury"**, click **Start case review**.
-2. The case analyses itself on first open — seven stages, about 40 seconds, with live progress
-   and a **Skip the rest** button. Every item arrives marked **AI suggested**, and the Naranjo
+2. The case analyses itself on first open — about 20 seconds in two phases, with live progress
+   and a **Skip the rest** button. Six stages read only the narrative and are fanned out
+   concurrently server-side; `missing` follows after, since it reads confirmed evidence. Every item arrives marked **AI suggested**, and the Naranjo
    chip in the header still reads **0**: none of it is evidence yet. This runs once; reopening
    the case will not repeat it, and each step keeps its own button for re-running on demand.
 3. Accept most, **edit** one, **reject** one. The AI's original value stays visible beside yours.
@@ -182,7 +183,14 @@ told to be comprehensive; the verifier is told only to falsify; the rationale dr
 nothing but confirmed evidence. Giving one prompt several of those jobs is what produces
 confident, unfalsifiable prose.
 
-Splitting the work also made it usable: stages take 2–9s each instead of one 34s block.
+Splitting the work also made it usable. The six narrative-only stages are computed
+concurrently behind `/suggest-batch`, taking first-open analysis from 43.7s to 20.7s.
+
+That batching is a single request by necessity, not preference: every write path loads,
+mutates and saves the whole case document, so firing the per-stage endpoint six times in
+parallel from the browser would let the last response win and discard the other five.
+Concurrency is confined to the model calls, which do not touch the document; merging happens
+on one thread in a fixed order, so the result does not depend on which call returned first.
 
 ---
 

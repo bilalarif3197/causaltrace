@@ -37,6 +37,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import threading
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
@@ -172,6 +173,11 @@ class OpenAIClient(ModelClient):
         #: Some models reject an explicit temperature; drop it if told so.
         self._send_temperature = True
         self.notes: list[str] = []
+        # Stages can be dispatched concurrently. Negotiation mutates shared
+        # state, so exactly one caller may probe; the rest wait for the answer
+        # and then run in parallel on the fast path. Without this, six threads
+        # would each independently probe and fight over `active_json_mode`.
+        self._negotiate_lock = threading.Lock()
 
     # -- request construction -------------------------------------------------
 
@@ -219,12 +225,52 @@ class OpenAIClient(ModelClient):
         schema_name: str,
         case_id: str | None = None,
     ) -> dict[str, Any]:
+        # Fast path: the mode is already known, so run without any locking.
+        if self.active_json_mode is not None:
+            return self._complete_with(
+                self.active_json_mode, stage=stage, system=system, user=user,
+                schema=schema, schema_name=schema_name,
+            )
+
+        # Negotiate under the lock so concurrent callers do not each probe.
+        # Double-checked: another thread may have finished while we waited.
+        with self._negotiate_lock:
+            if self.active_json_mode is not None:
+                mode = self.active_json_mode
+            else:
+                return self._negotiate(
+                    stage=stage, system=system, user=user, schema=schema, schema_name=schema_name
+                )
+        return self._complete_with(
+            mode, stage=stage, system=system, user=user, schema=schema, schema_name=schema_name
+        )
+
+    def _complete_with(
+        self, mode: str, *, stage: str, system: str, user: str, schema: dict, schema_name: str
+    ) -> dict[str, Any]:
+        """One attempt in a known-good mode, with the transient-empty retry."""
+        empty_retries = 1
+        while True:
+            try:
+                return self._attempt(mode, system, user, schema, schema_name)
+            except json.JSONDecodeError:
+                if empty_retries:
+                    empty_retries -= 1
+                    continue
+                raise RuntimeError(
+                    f"Provider returned unparseable JSON twice at stage '{stage}' in "
+                    f"'{mode}' mode."
+                ) from None
+
+    def _negotiate(
+        self, *, stage: str, system: str, user: str, schema: dict, schema_name: str
+    ) -> dict[str, Any]:
         from openai import BadRequestError, NotFoundError, UnprocessableEntityError
 
         # Unsupported-parameter errors; anything else (401/429/5xx) propagates.
         negotiable = (BadRequestError, NotFoundError, UnprocessableEntityError)
 
-        candidates = (self.active_json_mode,) if self.active_json_mode else self._candidates
+        candidates = self._candidates
         failures: list[str] = []
 
         for mode in candidates:

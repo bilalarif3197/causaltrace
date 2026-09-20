@@ -122,3 +122,20 @@ Leaves a case titled `[screenshot seed] ...` in the database; safe to delete.
 Use the SVG icons in `components/ui.tsx` (CheckIcon, PencilIcon, CrossIcon, WarnIcon,
 QuestionIcon, AiIcon). Dingbat characters render inconsistently and some fonts substitute
 colour emoji for them, which is wrong for a clinical tool.
+
+## Concurrency
+
+`POST /api/cases/{id}/suggest-batch` computes the `PARALLEL_STAGES` concurrently. Two rules:
+
+1. **Only `_compute` may run in parallel, and it must never mutate the document.** `_merge`
+   runs single-threaded in the caller's order, so results do not depend on network timing.
+2. **`missing` and `rationale` are not batchable.** Both read `confirmed_evidence_digest`, so
+   running them alongside extraction hands them an empty case. `run_suggest_batch` rejects them.
+
+Do not emulate the batch by calling `/suggest/{stage}` several times in parallel from the
+frontend: each call rewrites the whole document, so the last response would discard the rest.
+`tests/test_batch.py` pins this, including that no stage is lost and that a partial failure
+keeps the stages that worked.
+
+The client negotiates JSON mode once under a lock; concurrent callers wait for the answer
+rather than each probing.

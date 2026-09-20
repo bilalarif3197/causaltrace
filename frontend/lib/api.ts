@@ -91,6 +91,21 @@ export const runSuggest = (id: string, stage: SuggestStage) =>
     `/api/cases/${id}/suggest/${stage}`,
   );
 
+/**
+ * Run the narrative-only stages concurrently, server-side.
+ *
+ * Must not be emulated by firing the single-stage endpoint several times from
+ * here: each of those rewrites the whole case document, so parallel calls
+ * would let the last response win and discard the rest.
+ */
+export const runSuggestBatch = (id: string, stages?: SuggestStage[]) =>
+  post<{
+    envelope: CaseEnvelope;
+    notes: string[];
+    stages: string[];
+    failed: Record<string, string>;
+  }>(`/api/cases/${id}/suggest-batch`, { stages: stages ?? null });
+
 export const reviewEntity = (
   id: string,
   entityType: string,

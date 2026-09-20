@@ -16,6 +16,7 @@ Invariants enforced in this module:
 from __future__ import annotations
 
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Optional
 
 from schemas.review import (
@@ -51,6 +52,11 @@ DISCLAIMER = (
     "does not establish medical causation, is not a medical device, and is not a clinical "
     "decision tool."
 )
+
+#: Stages that read only the narrative, so they may be computed concurrently.
+#: `missing` and `rationale` are excluded deliberately -- both read
+#: reviewer-confirmed evidence and would see an empty case if run too early.
+PARALLEL_STAGES = ("facts", "timeline", "dimensions", "hypotheses", "naranjo", "who_umc")
 
 SUGGEST_STAGES = (
     "facts",
@@ -150,16 +156,37 @@ def create_case(
 # ---------------------------------------------------------------------------
 
 
-def run_suggest(client, doc: CaseDocument, stage: str) -> tuple[CaseDocument, str]:
-    """Run one AI stage. Returns the document and a human-readable note."""
-    if stage not in SUGGEST_STAGES:
-        raise WorkspaceError(f"Unknown stage '{stage}'. Expected one of {', '.join(SUGGEST_STAGES)}.")
+def _compute(client, doc: CaseDocument, stage: str):
+    """Call the model for one stage. Must NOT mutate `doc`.
 
+    Kept side-effect free so several stages can be computed concurrently
+    against the same document; the merge that follows is single-threaded.
+    """
+    if stage == "facts":
+        return suggest.verify_facts(client, doc, suggest.suggest_facts(client, doc))
+    if stage == "timeline":
+        return suggest.suggest_timeline(client, doc)
+    if stage == "dimensions":
+        return suggest.suggest_dimensions(client, doc)
+    if stage == "hypotheses":
+        return suggest.suggest_hypotheses(client, doc)
+    if stage == "missing":
+        return suggest.suggest_missing_evidence(client, doc)
+    if stage == "naranjo":
+        return suggest.suggest_naranjo(client, doc)
+    if stage == "who_umc":
+        return suggest.suggest_who_umc(client, doc)
+    if stage == "rationale":
+        return suggest.draft_rationale(client, doc, framework_summary(doc))
+    raise WorkspaceError(f"Unknown stage '{stage}'. Expected one of {', '.join(SUGGEST_STAGES)}.")
+
+
+def _merge(doc: CaseDocument, stage: str, result) -> str:
+    """Fold a computed result into the document. Single-threaded, mutating."""
     note = ""
 
     if stage == "facts":
-        facts = suggest.suggest_facts(client, doc)
-        facts = suggest.verify_facts(client, doc, facts)
+        facts = result
         # Re-running must not clobber review work: keep every fact the reviewer
         # has already touched, and only add genuinely new candidates.
         reviewed = [f for f in doc.facts if f.reviewer_status is not ReviewerStatus.AI_SUGGESTED]
@@ -174,7 +201,7 @@ def run_suggest(client, doc: CaseDocument, stage: str) -> tuple[CaseDocument, st
             note += f"; kept {len(reviewed)} already-reviewed item(s)"
 
     elif stage == "timeline":
-        events = suggest.suggest_timeline(client, doc)
+        events = result
         kept = [e for e in doc.timeline if e.reviewer_status is not ReviewerStatus.AI_SUGGESTED]
         labels = {e.label for e in kept}
         fresh = [e for e in events if e.label not in labels]
@@ -182,7 +209,7 @@ def run_suggest(client, doc: CaseDocument, stage: str) -> tuple[CaseDocument, st
         note = f"Suggested {len(fresh)} timeline event(s)"
 
     elif stage == "dimensions":
-        incoming = suggest.suggest_dimensions(client, doc)
+        incoming = result
         existing = {d.id: d for d in doc.dimensions}
         merged = []
         for question in incoming:
@@ -197,7 +224,7 @@ def run_suggest(client, doc: CaseDocument, stage: str) -> tuple[CaseDocument, st
         note = f"Answered {len(incoming)} investigation question(s)"
 
     elif stage == "hypotheses":
-        incoming = suggest.suggest_hypotheses(client, doc)
+        incoming = result
         assessed = [h for h in doc.hypotheses if h.reviewer_assessment or h.origin is Origin.REVIEWER]
         labels = {h.label.strip().lower() for h in assessed}
         fresh = [h for h in incoming if h.label.strip().lower() not in labels]
@@ -205,7 +232,7 @@ def run_suggest(client, doc: CaseDocument, stage: str) -> tuple[CaseDocument, st
         note = f"Suggested {len(fresh)} competing hypothes{'is' if len(fresh) == 1 else 'es'}"
 
     elif stage == "missing":
-        items = suggest.suggest_missing_evidence(client, doc)
+        items = result
         touched = [m for m in doc.missing_evidence if m.status is not MissingEvidenceStatus.OPEN]
         prompts = {m.prompt.strip().lower() for m in touched}
         fresh = [m for m in items if m.prompt.strip().lower() not in prompts]
@@ -215,7 +242,7 @@ def run_suggest(client, doc: CaseDocument, stage: str) -> tuple[CaseDocument, st
     elif stage == "naranjo":
         if not doc.naranjo:
             doc.naranjo = blank_naranjo_items()
-        suggestions = suggest.suggest_naranjo(client, doc)
+        suggestions = result
         changed = 0
         for item in doc.naranjo:
             suggestion = suggestions.get(item.number)
@@ -233,7 +260,7 @@ def run_suggest(client, doc: CaseDocument, stage: str) -> tuple[CaseDocument, st
         note = f"Suggested answers for {changed} unreviewed Naranjo item(s)"
 
     elif stage == "who_umc":
-        incoming = suggest.suggest_who_umc(client, doc)
+        incoming = result
         if doc.who_umc and doc.who_umc.reviewer_classification:
             doc.who_umc.ai_classification = incoming.ai_classification
             doc.who_umc.ai_reasoning = incoming.ai_reasoning
@@ -244,16 +271,30 @@ def run_suggest(client, doc: CaseDocument, stage: str) -> tuple[CaseDocument, st
         note = f"Suggested WHO-UMC category: {incoming.ai_classification}"
 
     elif stage == "rationale":
-        text = suggest.draft_rationale(client, doc, framework_summary(doc))
+        text = result
         doc.conclusion.ai_draft_rationale = text
         if doc.conclusion.rationale_status is ReviewerStatus.AI_SUGGESTED:
             doc.conclusion.reviewer_rationale = text
         note = "Drafted a rationale from reviewer-confirmed evidence"
 
-    if stage not in doc.stages_run:
-        doc.stages_run.append(stage)
+    return note
+
+
+def _finalise(doc: CaseDocument, client, stages: list[str]) -> None:
+    for stage in stages:
+        if stage not in doc.stages_run:
+            doc.stages_run.append(stage)
     doc.model_used = getattr(client, "name", None)
     doc.mode = getattr(client, "mode", "mock")
+
+
+def run_suggest(client, doc: CaseDocument, stage: str) -> tuple[CaseDocument, str]:
+    """Run one AI stage. Returns the document and a human-readable note."""
+    if stage not in SUGGEST_STAGES:
+        raise WorkspaceError(f"Unknown stage '{stage}'. Expected one of {', '.join(SUGGEST_STAGES)}.")
+
+    note = _merge(doc, stage, _compute(client, doc, stage))
+    _finalise(doc, client, [stage])
 
     store.save_case(doc)
     store.log(
@@ -265,6 +306,59 @@ def run_suggest(client, doc: CaseDocument, stage: str) -> tuple[CaseDocument, st
         after={"model": doc.model_used, "mode": doc.mode},
     )
     return doc, note
+
+
+def run_suggest_batch(
+    client, doc: CaseDocument, stages: list[str]
+) -> tuple[CaseDocument, list[str], dict[str, str]]:
+    """Compute several stages concurrently, then merge them one at a time.
+
+    Only PARALLEL_STAGES are permitted. `missing` and `rationale` read
+    reviewer-confirmed evidence, so running them alongside extraction would
+    show them an empty case; they stay sequential by construction rather than
+    by convention.
+
+    Concurrency is confined to `_compute`, which does not touch the document.
+    Merging happens on this thread in a fixed order, so the result does not
+    depend on which model call returned first, and the case is saved once.
+    """
+    unknown = [s for s in stages if s not in PARALLEL_STAGES]
+    if unknown:
+        raise WorkspaceError(
+            f"Cannot run {', '.join(unknown)} in parallel. "
+            f"Batchable stages are: {', '.join(PARALLEL_STAGES)}."
+        )
+
+    results: dict[str, object] = {}
+    errors: dict[str, str] = {}
+
+    with ThreadPoolExecutor(max_workers=len(stages) or 1) as pool:
+        futures = {pool.submit(_compute, client, doc, s): s for s in stages}
+        for future in as_completed(futures):
+            stage = futures[future]
+            try:
+                results[stage] = future.result()
+            except Exception as exc:  # noqa: BLE001 - reported per stage
+                errors[stage] = f"{type(exc).__name__}: {exc}"
+
+    notes: list[str] = []
+    # Merge in the caller's order, not completion order, so the outcome is
+    # deterministic regardless of network timing.
+    for stage in stages:
+        if stage in results:
+            notes.append(_merge(doc, stage, results[stage]))
+
+    _finalise(doc, client, [s for s in stages if s in results])
+    store.save_case(doc)
+    store.log(
+        doc.id,
+        actor=Origin.AI,
+        action="SUGGEST_BATCH",
+        entity_type="batch",
+        summary="; ".join(notes) or "no stages completed",
+        after={"stages": list(results), "failed": errors, "model": doc.model_used},
+    )
+    return doc, notes, errors
 
 
 def _renumber(events: list[TimelineEntry]) -> list[TimelineEntry]:

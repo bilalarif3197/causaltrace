@@ -31,15 +31,18 @@ import type { StepProps } from "@/components/steps/types";
  * `missing` is included, but it reads better after review: re-running it later
  * lets it see what the reviewer actually confirmed.
  */
-const AUTO_STAGES: { stage: SuggestStage; label: string }[] = [
-  { stage: "facts", label: "Extracting evidence" },
-  { stage: "timeline", label: "Building the timeline" },
-  { stage: "dimensions", label: "Analysing causality dimensions" },
-  { stage: "hypotheses", label: "Finding competing causes" },
-  { stage: "naranjo", label: "Answering Naranjo items" },
-  { stage: "missing", label: "Identifying information gaps" },
-  { stage: "who_umc", label: "Drafting a WHO-UMC view" },
+/** Stages the server runs concurrently in a single request. */
+const BATCH_STAGES: SuggestStage[] = [
+  "facts",
+  "timeline",
+  "dimensions",
+  "hypotheses",
+  "naranjo",
+  "who_umc",
 ];
+
+/** Everything the first open covers, in the order it happens. */
+const AUTO_STAGES: SuggestStage[] = [...BATCH_STAGES, "missing"];
 
 const SCREENS: Record<StepId, (p: StepProps) => React.ReactNode> = {
   evidence: EvidenceReview,
@@ -64,33 +67,56 @@ export default function CaseWorkspace({ params }: { params: Promise<{ id: string
   const [note, setNote] = useState<string | null>(null);
 
   /** Progress of the first-open analysis, or null when not running. */
-  const [auto, setAuto] = useState<{ index: number; label: string } | null>(null);
+  const [auto, setAuto] = useState<{ phase: number; label: string } | null>(null);
   const [autoStalled, setAutoStalled] = useState(false);
   const cancelled = useRef(false);
   const autoStarted = useRef(false);
 
-  /** Run the remaining first-open stages, one at a time so progress is visible. */
+  /**
+   * First-open analysis, in two phases.
+   *
+   * Phase 1 is a single batched request that the server fans out across the
+   * narrative-only stages concurrently — roughly 12s instead of 35s. It is one
+   * request on purpose: the per-stage endpoint rewrites the whole document, so
+   * calling it six times in parallel from here would discard five of them.
+   *
+   * Phase 2 runs `missing` afterwards, because it reads reviewer-confirmed
+   * evidence and would otherwise be handed an empty case.
+   */
   const runAuto = useCallback(
-    async (from: string[]) => {
+    async (done: string[]) => {
       cancelled.current = false;
       setAutoStalled(false);
-      const todo = AUTO_STAGES.filter((s) => !from.includes(s.stage));
+      const pending = BATCH_STAGES.filter((s) => !done.includes(s));
 
-      for (let i = 0; i < todo.length; i++) {
-        if (cancelled.current) break;
-        setAuto({ index: AUTO_STAGES.length - todo.length + i, label: todo[i].label });
-        try {
-          const res = await api.runSuggest(id, todo[i].stage);
+      try {
+        if (pending.length > 0) {
+          setAuto({ phase: 0, label: `Reading the narrative — ${pending.length} passes at once` });
+          const res = await api.runSuggestBatch(id, pending);
           setEnvelope(res.envelope);
-        } catch (e) {
-          // Stop rather than firing six more failing calls. The reviewer can
-          // resume, or just use the per-step buttons.
-          setError(e instanceof Error ? e.message : String(e));
-          setAutoStalled(true);
-          break;
+
+          const failed = Object.entries(res.failed);
+          if (failed.length > 0) {
+            setError(
+              `${failed.length} step(s) failed: ` +
+                failed.map(([s, m]) => `${s} — ${m}`).join("; "),
+            );
+            setAutoStalled(true);
+            return;
+          }
         }
+
+        if (!cancelled.current && !done.includes("missing")) {
+          setAuto({ phase: 1, label: "Identifying information gaps" });
+          const res = await api.runSuggest(id, "missing");
+          setEnvelope(res.envelope);
+        }
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e));
+        setAutoStalled(true);
+      } finally {
+        setAuto(null);
       }
-      setAuto(null);
     },
     [id],
   );
@@ -241,30 +267,31 @@ export default function CaseWorkspace({ params }: { params: Promise<{ id: string
                   aria-hidden
                 />
                 <p className="text-[12.5px] font-medium text-slate-soft">
-                  Preparing this case — step {auto.index + 1} of {AUTO_STAGES.length}:{" "}
-                  {auto.label}…
+                  Preparing this case — phase {auto.phase + 1} of 2: {auto.label}…
                 </p>
-                <Button
-                  size="sm"
-                  className="ml-auto"
-                  onClick={() => {
-                    cancelled.current = true;
-                  }}
-                  title="Stop here and run the remaining steps yourself"
-                >
-                  Skip the rest
-                </Button>
+                {auto.phase === 0 && (
+                  <Button
+                    size="sm"
+                    className="ml-auto"
+                    onClick={() => {
+                      cancelled.current = true;
+                    }}
+                    title="Let this phase finish, then stop rather than looking for information gaps"
+                  >
+                    Skip the rest
+                  </Button>
+                )}
               </div>
               <div
                 className="mt-2.5 h-1 overflow-hidden rounded-full bg-ink-800"
                 role="progressbar"
-                aria-valuenow={auto.index + 1}
+                aria-valuenow={auto.phase + 1}
                 aria-valuemin={1}
-                aria-valuemax={AUTO_STAGES.length}
+                aria-valuemax={2}
               >
                 <div
                   className="h-full rounded-full bg-violet-300 transition-all duration-500"
-                  style={{ width: `${((auto.index + 1) / AUTO_STAGES.length) * 100}%` }}
+                  style={{ width: `${((auto.phase + 1) / 2) * 100}%` }}
                 />
               </div>
               <p className="mt-2 text-[11px] leading-relaxed text-slate-muted">
@@ -301,16 +328,23 @@ export default function CaseWorkspace({ params }: { params: Promise<{ id: string
             </Callout>
           )}
 
-          {/* While the first-open run is in flight, every control reports busy
-              so the reviewer cannot fire a second suggestion on top of it. */}
-          <Screen
-            envelope={envelope}
-            run={run}
-            suggest={suggest}
-            busyKey={auto ? `suggest-${AUTO_STAGES[auto.index]?.stage ?? "facts"}` : busyKey}
-            active={active}
-            onSelectSpan={setActive}
-          />
+          {/* Interaction is blocked while the first-open run is in flight.
+              Every write path reloads, mutates and saves the whole document,
+              so a review action landing mid-batch could be overwritten by it.
+              There is nothing to review yet during this window anyway. */}
+          <div
+            className={auto ? "pointer-events-none select-none opacity-60" : undefined}
+            aria-busy={Boolean(auto)}
+          >
+            <Screen
+              envelope={envelope}
+              run={run}
+              suggest={suggest}
+              busyKey={auto ? `suggest-${auto.phase === 0 ? "facts" : "missing"}` : busyKey}
+              active={active}
+              onSelectSpan={setActive}
+            />
+          </div>
 
           <nav className="flex items-center justify-between gap-3 border-t border-ink-700/60 pt-4">
             <Button

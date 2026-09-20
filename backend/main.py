@@ -127,6 +127,19 @@ class SuggestResponse(BaseModel):
     stage: str
 
 
+class BatchBody(BaseModel):
+    #: Defaults to every parallel-safe stage, which is what first open wants.
+    stages: Optional[list[str]] = None
+
+
+class BatchResponse(BaseModel):
+    envelope: CaseEnvelope
+    notes: list[str]
+    stages: list[str]
+    #: Per-stage failures. A partial batch still returns 200 with what worked.
+    failed: dict[str, str] = Field(default_factory=dict)
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -224,6 +237,28 @@ def delete_case(case_id: str) -> Response:
 # ---------------------------------------------------------------------------
 # AI suggestion runs -- always explicit, never automatic
 # ---------------------------------------------------------------------------
+
+
+@app.post("/api/cases/{case_id}/suggest-batch", response_model=BatchResponse)
+def run_suggest_batch(case_id: str, body: BatchBody) -> BatchResponse:
+    """Run the narrative-only stages concurrently.
+
+    One request rather than several, because each single-stage call rewrites
+    the whole document: firing them in parallel from the browser would make
+    the last response win and silently discard the rest.
+    """
+    doc = _load(case_id)
+    stages = body.stages or list(workspace.PARALLEL_STAGES)
+    try:
+        doc, notes, failed = workspace.run_suggest_batch(_client, doc, stages)
+    except WorkspaceError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return BatchResponse(
+        envelope=workspace.envelope(doc),
+        notes=notes,
+        stages=[s for s in stages if s not in failed],
+        failed=failed,
+    )
 
 
 @app.post("/api/cases/{case_id}/suggest/{stage}", response_model=SuggestResponse)
