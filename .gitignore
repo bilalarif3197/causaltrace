@@ -31,3 +31,9 @@ backend/causaltrace.db
 backend/causaltrace.db-wal
 backend/causaltrace.db-shm
 tools/shots/
+
+# Challenge materials from Regeneron / HackMIT. Third-party content we do not
+# own, so it is not redistributable under this repo's MIT license. Kept on
+# disk for reference, never committed.
+*.docx
+*.pdf
