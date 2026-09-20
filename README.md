@@ -274,7 +274,7 @@ to 3/Possible — the same error the PMC harvester flags in published papers.
 ```bash
 cd backend
 .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/python -m pytest -q          # 134 tests
+.venv/bin/python -m pytest -q          # 147 tests
 .venv/bin/python validate_fixtures.py  # fixture quotes must be verbatim
 cd ../frontend && npx tsc --noEmit && npm run build
 ```
