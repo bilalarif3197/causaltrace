@@ -199,8 +199,13 @@ export default function CaseWorkspace({ params }: { params: Promise<{ id: string
 
   return (
     <main className="flex min-h-full flex-col">
-      <header className="sticky top-0 z-20 border-b border-ink-700/60 bg-ink-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-[1700px] flex-wrap items-center gap-x-4 gap-y-2 px-5 py-2.5">
+      {/* Opaque, not translucent. At 90% alpha every panel border scrolling
+          underneath bled through as a drifting hairline, and `backdrop-blur`
+          smeared it. The height is pinned to an exact 3.5rem so the bottom
+          border lands on a whole pixel instead of flickering on a half one,
+          and so the sticky columns below can align to it precisely. */}
+      <header className="sticky top-0 z-20 h-14 border-b border-ink-700/60 bg-ink-950">
+        <div className="mx-auto flex h-full max-w-[1700px] items-center gap-x-4 overflow-hidden px-5">
           <Link
             href="/"
             className="text-[12px] text-slate-muted transition hover:text-accent-400"
@@ -238,7 +243,7 @@ export default function CaseWorkspace({ params }: { params: Promise<{ id: string
 
       <div className="mx-auto grid w-full max-w-[1700px] flex-1 gap-5 px-5 py-5 print:block print:max-w-none print:p-0 xl:grid-cols-[13rem_minmax(0,1.15fr)_minmax(0,1.5fr)]">
         {/* Step rail */}
-        <aside className="print:hidden xl:sticky xl:top-[3.75rem] xl:self-start">
+        <aside className="print:hidden xl:sticky xl:top-14 xl:self-start">
           <StepRail envelope={envelope} current={step} onSelect={setStep} />
           <div className="mt-4 rounded-lg border border-ink-700/60 bg-ink-900/50 px-3 py-2.5">
             <p className="text-[10px] uppercase tracking-wider text-slate-muted">Review progress</p>
@@ -253,7 +258,7 @@ export default function CaseWorkspace({ params }: { params: Promise<{ id: string
         </aside>
 
         {/* Source narrative stays visible: it is what makes every pane auditable. */}
-        <div className="print:hidden xl:sticky xl:top-[3.75rem] xl:self-start">
+        <div className="print:hidden xl:sticky xl:top-14 xl:self-start">
           <SourcePanel narrative={doc.narrative} active={active} onClear={() => setActive(null)} />
         </div>
 

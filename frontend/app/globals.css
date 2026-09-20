@@ -46,6 +46,12 @@ body {
     radial-gradient(60rem 40rem at 15% -10%, #0d948814, transparent),
     radial-gradient(50rem 35rem at 90% 0%, #3b82f614, transparent),
     var(--color-ink-950);
+  /* Anchor the ambient glow to the viewport, not the document.
+     These are 8%-alpha gradients over near-black, which 8-bit colour cannot
+     represent smoothly, so they band. Attached to a 4,000px-tall document the
+     bands slide past as you scroll and read as stray horizontal lines; fixed
+     to the viewport they hold still, which is what the effect wanted anyway. */
+  background-attachment: fixed;
   color: var(--color-slate-soft);
 }
 
